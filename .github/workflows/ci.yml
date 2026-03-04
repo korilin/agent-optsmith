@@ -1,0 +1,26 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate shell scripts syntax
+        run: |
+          bash -n scripts/create_skill.sh
+          bash -n scripts/weekly_review.sh
+          bash -n scripts/metrics_report.sh
+
+      - name: Run smoke checks
+        run: |
+          chmod +x scripts/*.sh
+          ./scripts/create_skill.sh ci-smoke-skill
+          ./scripts/weekly_review.sh
+          ./scripts/metrics_report.sh --all

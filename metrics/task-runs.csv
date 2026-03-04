@@ -1,0 +1,2 @@
+date,task_id,task_type,project,model,used_skill,skill_name,total_tokens,duration_sec,success,rework_count
+# 2026-03-04,TASK-0001,debug,core-service,gpt-5,true,log-analysis-helper,1820,420,true,0
