@@ -13,7 +13,11 @@
    - `skills/aoso-repo-maintainer/scripts/sync_runtime_to_installable_skill.sh`
 2. Run:
    - `skills/aoso-repo-maintainer/scripts/validate_repo_workflow.sh`
-3. Update docs when behavior or command usage changed:
+3. Keep README English/Chinese synchronized:
+   - update both `README.md` and `README_CN.md`
+   - keep `README_SYNC_VERSION` marker identical
+   - run `skills/aoso-repo-maintainer/scripts/check_readme_sync.sh`
+4. Update docs when behavior or command usage changed:
    - `README.md`
    - `README_CN.md`
    - `docs/project-integration-guide-cn.md`

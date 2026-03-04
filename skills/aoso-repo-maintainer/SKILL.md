@@ -11,6 +11,7 @@ This skill is project-local and intended only for `agent-auto-self-optimizing-cl
 
 - Keep runtime scripts under `scripts/` and installable skill scripts under `skills/agent-self-optimizing-loop/scripts/` synchronized.
 - Run repository validation workflow before commit.
+- Keep English and Chinese README synchronized.
 - Keep docs consistent with changed commands and behavior.
 - Optionally install this project-local skill into local Codex skill home.
 
@@ -26,17 +27,25 @@ skills/aoso-repo-maintainer/scripts/sync_runtime_to_installable_skill.sh
 skills/aoso-repo-maintainer/scripts/validate_repo_workflow.sh
 ```
 
-3. If command behavior changed, update:
+3. Keep `README.md` and `README_CN.md` synchronized:
+- Update both files in the same change.
+- Keep `README_SYNC_VERSION` marker identical in both files.
+- Validate using:
+```bash
+skills/aoso-repo-maintainer/scripts/check_readme_sync.sh
+```
+
+4. If command behavior changed, update:
 - `README.md`
 - `README_CN.md`
 - `docs/project-integration-guide-cn.md`
 
-4. If this skill changed and should be active locally, install it:
+5. If this skill changed and should be active locally, install it:
 ```bash
 skills/aoso-repo-maintainer/scripts/install_to_codex.sh
 ```
 
-5. Commit only after workflow checks pass.
+6. Commit only after workflow checks pass.
 
 ## References
 
@@ -46,5 +55,6 @@ skills/aoso-repo-maintainer/scripts/install_to_codex.sh
 ## Scripts
 
 - `scripts/sync_runtime_to_installable_skill.sh`: Copy runtime scripts into installable skill.
+- `scripts/check_readme_sync.sh`: Enforce README English/Chinese synchronization.
 - `scripts/validate_repo_workflow.sh`: Syntax/parity/smoke checks for this repository.
 - `scripts/install_to_codex.sh`: Install this project-local skill into `$CODEX_HOME/skills`.

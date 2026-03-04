@@ -23,6 +23,7 @@ jobs:
           bash -n skills/agent-self-optimizing-loop/scripts/weekly_review.sh
           bash -n skills/agent-self-optimizing-loop/scripts/metrics_report.sh
           bash -n skills/aoso-repo-maintainer/scripts/sync_runtime_to_installable_skill.sh
+          bash -n skills/aoso-repo-maintainer/scripts/check_readme_sync.sh
           bash -n skills/aoso-repo-maintainer/scripts/validate_repo_workflow.sh
           bash -n skills/aoso-repo-maintainer/scripts/install_to_codex.sh
 

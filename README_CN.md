@@ -1,5 +1,7 @@
 # Agent 自动自优化闭环（作者手册）
 
+<!-- README_SYNC_VERSION: 2026-03-04 -->
+
 这是一个用于 AI 编码 Agent 的“自优化基础设施”项目。  
 你可以把它理解为两层：
 
@@ -212,10 +214,12 @@ python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-githu
 
 1. 修改代码/脚本
 2. 运行 `sync_runtime_to_installable_skill.sh`（若改了 runtime 脚本）
-3. 运行 `validate_repo_workflow.sh`
-4. 必要时更新 `README/README_CN` 与 `docs/`
-5. 提交并推送
-6. 记录关键任务数据，观察指标趋势
+3. 同步更新 `README.md` 与 `README_CN.md`，并保持 `README_SYNC_VERSION` 一致
+4. 运行 `check_readme_sync.sh`
+5. 运行 `validate_repo_workflow.sh`
+6. 必要时更新 `docs/`
+7. 提交并推送
+8. 记录关键任务数据，观察指标趋势
 
 ## 6. 当前项目状态（你可以直接复用）
 

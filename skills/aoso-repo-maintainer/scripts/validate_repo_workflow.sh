@@ -11,7 +11,7 @@ runtime_scripts=(
   "weekly_review.sh"
 )
 
-echo "[1/5] shell syntax checks"
+echo "[1/6] shell syntax checks"
 bash -n "${repo_root}/scripts/create_skill.sh"
 for f in "${runtime_scripts[@]}"; do
   bash -n "${repo_root}/scripts/${f}"
@@ -20,8 +20,9 @@ done
 bash -n "${repo_root}/skills/agent-self-optimizing-loop/scripts/setup_loop_workspace.sh"
 bash -n "${repo_root}/skills/aoso-repo-maintainer/scripts/sync_runtime_to_installable_skill.sh"
 bash -n "${repo_root}/skills/aoso-repo-maintainer/scripts/install_to_codex.sh"
+bash -n "${repo_root}/skills/aoso-repo-maintainer/scripts/check_readme_sync.sh"
 
-echo "[2/5] runtime/script parity checks"
+echo "[2/6] runtime/script parity checks"
 for f in "${runtime_scripts[@]}"; do
   cmp -s "${repo_root}/scripts/${f}" "${repo_root}/skills/agent-self-optimizing-loop/scripts/${f}" || {
     echo "error: runtime script out of sync: ${f}"
@@ -30,7 +31,10 @@ for f in "${runtime_scripts[@]}"; do
   }
 done
 
-echo "[3/5] root toolkit smoke test"
+echo "[3/6] README sync checks"
+"${repo_root}/skills/aoso-repo-maintainer/scripts/check_readme_sync.sh"
+
+echo "[4/6] root toolkit smoke test"
 mkdir -p "${tmp_dir}/rootdata/metrics" "${tmp_dir}/rootdata/knowledge-base/errors" "${tmp_dir}/rootdata/reports"
 cp "${repo_root}/metrics/task-runs.csv" "${tmp_dir}/rootdata/metrics/task-runs.csv"
 AOSO_DATA_FILE="${tmp_dir}/rootdata/metrics/task-runs.csv" \
@@ -49,7 +53,7 @@ AOSO_KB_DIR="${tmp_dir}/rootdata/knowledge-base/errors" \
 AOSO_REPORT_DIR="${tmp_dir}/rootdata/reports" \
   "${repo_root}/scripts/weekly_review.sh" >/dev/null
 
-echo "[4/5] installable skill smoke test"
+echo "[5/6] installable skill smoke test"
 mkdir -p "${tmp_dir}/skill-project"
 cd "${tmp_dir}/skill-project"
 "${repo_root}/skills/agent-self-optimizing-loop/scripts/setup_loop_workspace.sh" --workspace "$(pwd)" >/dev/null
@@ -66,5 +70,5 @@ cd "${tmp_dir}/skill-project"
 "${repo_root}/skills/agent-self-optimizing-loop/scripts/weekly_review.sh" >/dev/null
 cd "${repo_root}"
 
-echo "[5/5] done"
+echo "[6/6] done"
 echo "repository workflow validation passed"
