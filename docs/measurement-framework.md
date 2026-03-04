@@ -76,6 +76,18 @@ Compare:
 ```bash
 cd agent-auto-self-optimizing-closed-loop
 
+# Log one task run
+./scripts/log_task_run.sh \
+  --task-id TASK-1001 \
+  --task-type debug \
+  --project core-service \
+  --model gpt-5 \
+  --used-skill true \
+  --skill-name log-analysis-helper \
+  --total-tokens 1820 \
+  --duration-sec 420 \
+  --success true
+
 # Overall + all skills
 ./scripts/metrics_report.sh --all
 

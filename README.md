@@ -15,6 +15,7 @@ A practical template to let an AI coding agent optimize itself over time with:
 - `docs/measurement-framework.md`: How to quantify token and efficiency gains.
 - `scripts/create_skill.sh`: Create a skill skeleton with normalized naming.
 - `scripts/weekly_review.sh`: Generate a weekly optimization report from error KB.
+- `scripts/log_task_run.sh`: Append one standardized task-run record to metrics CSV.
 - `scripts/metrics_report.sh`: Compute overall, per-skill, and pre/post impact metrics.
 - `metrics/task-runs.csv`: Task execution dataset for impact analysis.
 - `templates/skill/SKILL.md.template`: Minimal skill template.
@@ -40,6 +41,18 @@ cd agent-auto-self-optimizing-closed-loop
 
 # 4) Check optimization effect
 ./scripts/metrics_report.sh --all
+
+# 5) Record one task run
+./scripts/log_task_run.sh \
+  --task-id TASK-1001 \
+  --task-type debug \
+  --project core-service \
+  --model gpt-5 \
+  --used-skill true \
+  --skill-name log-analysis-helper \
+  --total-tokens 1820 \
+  --duration-sec 420 \
+  --success true
 ```
 
 ## Recommended Workflow
