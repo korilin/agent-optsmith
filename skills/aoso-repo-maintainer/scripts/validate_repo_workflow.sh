@@ -21,6 +21,7 @@ bash -n "${repo_root}/skills/agent-self-optimizing-loop/scripts/setup_loop_works
 bash -n "${repo_root}/skills/aoso-repo-maintainer/scripts/sync_runtime_to_installable_skill.sh"
 bash -n "${repo_root}/skills/aoso-repo-maintainer/scripts/install_to_codex.sh"
 bash -n "${repo_root}/skills/aoso-repo-maintainer/scripts/check_readme_sync.sh"
+bash -n "${repo_root}/skills/aoso-repo-maintainer/scripts/auto_commit.sh"
 
 echo "[2/6] runtime/script parity checks"
 for f in "${runtime_scripts[@]}"; do

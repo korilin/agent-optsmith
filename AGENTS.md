@@ -52,9 +52,10 @@ Use project-local skill `aoso-repo-maintainer` for repository maintenance tasks:
 - trigger: any change to `scripts/`, `skills/`, CI, or workflow docs.
 - required workflow:
   1. `skills/aoso-repo-maintainer/scripts/sync_runtime_to_installable_skill.sh` (when runtime scripts changed)
-  2. `skills/aoso-repo-maintainer/scripts/check_readme_sync.sh` (README.md and README_CN.md must stay synchronized)
-  3. `skills/aoso-repo-maintainer/scripts/validate_repo_workflow.sh`
-  4. Update docs when command behavior changed.
+  2. Update docs when command behavior changed.
+  3. `skills/aoso-repo-maintainer/scripts/check_readme_sync.sh` (README.md and README_CN.md must stay synchronized)
+  4. `skills/aoso-repo-maintainer/scripts/validate_repo_workflow.sh`
+  5. `skills/aoso-repo-maintainer/scripts/auto_commit.sh --message "<commit-message>"`
 
 ## Error KB Policy
 

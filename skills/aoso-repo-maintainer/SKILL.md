@@ -40,12 +40,17 @@ skills/aoso-repo-maintainer/scripts/check_readme_sync.sh
 - `README_CN.md`
 - `docs/project-integration-guide-cn.md`
 
-5. If this skill changed and should be active locally, install it:
+5. Auto-commit after checks pass:
+```bash
+skills/aoso-repo-maintainer/scripts/auto_commit.sh --message "docs: update workflow"
+```
+
+6. If this skill changed and should be active locally, install it:
 ```bash
 skills/aoso-repo-maintainer/scripts/install_to_codex.sh
 ```
 
-6. Commit only after workflow checks pass.
+7. Commit is done by `auto_commit.sh` only after workflow checks pass.
 
 ## References
 
@@ -57,4 +62,5 @@ skills/aoso-repo-maintainer/scripts/install_to_codex.sh
 - `scripts/sync_runtime_to_installable_skill.sh`: Copy runtime scripts into installable skill.
 - `scripts/check_readme_sync.sh`: Enforce README English/Chinese synchronization.
 - `scripts/validate_repo_workflow.sh`: Syntax/parity/smoke checks for this repository.
+- `scripts/auto_commit.sh`: Stage all changes and create one non-interactive commit.
 - `scripts/install_to_codex.sh`: Install this project-local skill into `$CODEX_HOME/skills`.

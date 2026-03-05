@@ -21,6 +21,8 @@
    - `README.md`
    - `README_CN.md`
    - `docs/project-integration-guide-cn.md`
+5. Auto-commit after all checks pass:
+   - `skills/aoso-repo-maintainer/scripts/auto_commit.sh --message "<commit-message>"`
 
 ## Optional local skill install
 
