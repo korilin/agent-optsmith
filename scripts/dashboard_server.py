@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Local dashboard for self-optimizing loop data.
 
-The server executes repository scripts (`metrics_report.sh` and `weekly_review.sh`)
-and exposes a filterable UI for date ranges, skill selection, and metric keys.
+The server executes repository scripts (`metrics_report.sh`, `weekly_review.sh`,
+and `optimize_skill.sh`) and exposes a filterable UI for date ranges, skill
+selection, metric keys, optimization discovery, and manual optimization trigger.
 """
 
 from __future__ import annotations
@@ -14,12 +15,13 @@ import os
 import shutil
 import subprocess
 import tempfile
+from collections import Counter
 from dataclasses import dataclass
 from datetime import date, datetime
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from typing import Dict, List, Sequence, Tuple
+from typing import Dict, List, Optional, Sequence, Tuple
 from urllib.parse import parse_qs, urlparse
 
 
@@ -146,6 +148,70 @@ HTML_PAGE = """<!doctype html>
       color: var(--muted);
       font-size: 13px;
     }
+    .op-wrap {
+      margin-top: 10px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .op-card {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px;
+      background: #fff;
+    }
+    .op-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .op-title {
+      font-size: 14px;
+      font-weight: 700;
+      margin: 0;
+      word-break: break-word;
+    }
+    .badge {
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      border: 1px solid var(--line);
+      background: #f7f3eb;
+      color: #4f5c64;
+      white-space: nowrap;
+    }
+    .badge.needs_optimization { background: #fff0e8; color: #8b2d00; border-color: #f2c2a5; }
+    .badge.watch { background: #fff8e7; color: #7a5200; border-color: #e7cd8e; }
+    .badge.healthy { background: #e9f8ef; color: #1f6b39; border-color: #b6debf; }
+    .badge.no_data { background: #eef2f5; color: #5f6e79; border-color: #d3dde4; }
+    .op-score {
+      color: var(--muted);
+      font-size: 12px;
+      margin: 0 0 8px;
+    }
+    .mini-list {
+      margin: 0;
+      padding-left: 16px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+    .trigger-btn {
+      margin-top: 8px;
+      width: 100%;
+      border-color: #8f2d56;
+      background: #8f2d56;
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .trigger-btn[disabled] {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
     details {
       border: 1px solid var(--line);
       border-radius: 10px;
@@ -169,6 +235,7 @@ HTML_PAGE = """<!doctype html>
     @media (max-width: 900px) {
       .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .op-wrap { grid-template-columns: 1fr; }
     }
     @media (max-width: 640px) {
       .grid { grid-template-columns: 1fr; }
@@ -212,6 +279,12 @@ HTML_PAGE = """<!doctype html>
       <div class="meta" id="metaText">Loading...</div>
       <div class="cards" id="cards"></div>
       <ul class="list" id="sections"></ul>
+      <h3 style="margin: 12px 0 8px; font-size: 16px;">Skill Optimization Discovery</h3>
+      <div class="op-wrap" id="opportunities"></div>
+      <details>
+        <summary>Optimization Trigger Log</summary>
+        <pre id="optimizeLog"></pre>
+      </details>
       <details>
         <summary>Raw Overall Output</summary>
         <pre id="overallRaw"></pre>
@@ -238,6 +311,8 @@ HTML_PAGE = """<!doctype html>
       hint: document.getElementById("hint"),
       cards: document.getElementById("cards"),
       sections: document.getElementById("sections"),
+      opportunities: document.getElementById("opportunities"),
+      optimizeLog: document.getElementById("optimizeLog"),
       overallRaw: document.getElementById("overallRaw"),
       skillRaw: document.getElementById("skillRaw"),
       weeklyRaw: document.getElementById("weeklyRaw"),
@@ -294,6 +369,71 @@ HTML_PAGE = """<!doctype html>
       }
     }
 
+    function statusLabel(raw) {
+      if (!raw) return "unknown";
+      return raw.replaceAll("_", " ");
+    }
+
+    function renderOpportunities(items) {
+      nodes.opportunities.innerHTML = "";
+      if (!items || items.length === 0) {
+        nodes.opportunities.innerHTML =
+          '<div class="op-card"><p class="op-title">No skill rows for selected range.</p></div>';
+        return;
+      }
+      for (const item of items) {
+        const card = document.createElement("div");
+        card.className = "op-card";
+        const reasons = (item.reasons || []).map((r) => `<li>${r}</li>`).join("");
+        const actions = (item.suggested_actions || []).map((a) => `<li>${a}</li>`).join("");
+        const roots = (item.top_root_causes || []).map((c) => `<li>${c}</li>`).join("");
+        const status = item.status || "unknown";
+        const disabled = item.can_trigger ? "" : "disabled";
+        card.innerHTML = `
+          <div class="op-head">
+            <p class="op-title">${item.skill}</p>
+            <span class="badge ${status}">${statusLabel(status)}</span>
+          </div>
+          <p class="op-score">score=${item.score} | sample=${item.sample_size_skill}</p>
+          <div style="font-size:12px; margin-bottom:6px;">Findings</div>
+          <ul class="mini-list">${reasons || "<li>none</li>"}</ul>
+          <div style="font-size:12px; margin:8px 0 6px;">Suggested actions</div>
+          <ul class="mini-list">${actions || "<li>none</li>"}</ul>
+          <div style="font-size:12px; margin:8px 0 6px;">Top root causes</div>
+          <ul class="mini-list">${roots || "<li>none</li>"}</ul>
+          <button class="trigger-btn" data-skill="${item.skill}" ${disabled}>Trigger Self-Optimization</button>
+        `;
+        nodes.opportunities.appendChild(card);
+      }
+    }
+
+    async function triggerOptimization(skill) {
+      const payload = {
+        skill,
+        start: nodes.startDate.value || "",
+        end: nodes.endDate.value || "",
+        cutover: nodes.cutoverDate.value || "",
+      };
+      const response = await fetch("/api/optimize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+      const data = await response.json();
+      const now = new Date().toISOString();
+      const line = [
+        `[${now}] skill=${skill}`,
+        `status=${data.optimization_status || "unknown"}`,
+        `score=${data.opportunity_score || "n/a"}`,
+        `report=${data.report_file || "n/a"}`,
+      ].join(" | ");
+      nodes.optimizeLog.textContent = `${line}\n${nodes.optimizeLog.textContent || ""}`.trim();
+      return data;
+    }
+
     async function refreshDashboard() {
       nodes.hint.textContent = "";
       const params = new URLSearchParams();
@@ -308,6 +448,7 @@ HTML_PAGE = """<!doctype html>
         const metrics = report.flat_metrics || {};
         renderCards(metrics, metricFilter);
         renderSections(report.sections || []);
+        renderOpportunities(report.opportunities || []);
         nodes.overallRaw.textContent = report.overall_raw || "";
         nodes.skillRaw.textContent = report.skill_raw || "(no skill query)";
         nodes.weeklyRaw.textContent = report.weekly_raw || "(empty)";
@@ -329,6 +470,27 @@ HTML_PAGE = """<!doctype html>
     }
 
     nodes.refreshBtn.addEventListener("click", refreshDashboard);
+    nodes.opportunities.addEventListener("click", async (event) => {
+      const btn = event.target.closest(".trigger-btn");
+      if (!btn) return;
+      const skill = btn.getAttribute("data-skill");
+      if (!skill) return;
+      btn.disabled = true;
+      const old = btn.textContent;
+      btn.textContent = "Running...";
+      try {
+        await triggerOptimization(skill);
+        btn.textContent = "Triggered";
+      } catch (err) {
+        nodes.hint.textContent = `Optimize failed: ${err.message}`;
+        btn.textContent = old;
+      } finally {
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.textContent = old;
+        }, 1200);
+      }
+    });
     boot();
   </script>
 </body>
@@ -355,6 +517,7 @@ class RuntimePaths:
     report_dir: Path
     metrics_script: Path
     weekly_script: Path
+    optimize_script: Path
 
 
 def resolve_runtime_paths() -> RuntimePaths:
@@ -382,6 +545,7 @@ def resolve_runtime_paths() -> RuntimePaths:
         report_dir=report_dir,
         metrics_script=script_dir / "metrics_report.sh",
         weekly_script=script_dir / "weekly_review.sh",
+        optimize_script=script_dir / "optimize_skill.sh",
     )
 
 
@@ -492,6 +656,251 @@ def collect_skills(rows: Sequence[Dict[str, str]]) -> List[str]:
     return sorted(skill_set)
 
 
+def _parse_percent(value: str) -> Optional[float]:
+    if not value or value == "n/a":
+        return None
+    raw = value.strip().replace("%", "")
+    try:
+        return float(raw)
+    except ValueError:
+        return None
+
+
+def _parse_pp(value: str) -> Optional[float]:
+    if not value or value == "n/a":
+        return None
+    raw = value.strip().replace("pp", "")
+    try:
+        return float(raw)
+    except ValueError:
+        return None
+
+
+def _parse_float(value: str) -> Optional[float]:
+    if not value or value == "n/a":
+        return None
+    try:
+        return float(value.strip())
+    except ValueError:
+        return None
+
+
+def _parse_int(value: str) -> Optional[int]:
+    if not value or value == "n/a":
+        return None
+    try:
+        return int(value.strip())
+    except ValueError:
+        return None
+
+
+def _unique_ordered(values: Sequence[str]) -> List[str]:
+    seen = set()
+    out: List[str] = []
+    for value in values:
+        if value in seen:
+            continue
+        seen.add(value)
+        out.append(value)
+    return out
+
+
+def load_kb_entries(kb_dir: Path, start: str, end: str) -> List[Dict[str, str]]:
+    if not kb_dir.exists():
+        return []
+
+    entries: List[Dict[str, str]] = []
+    for md in kb_dir.glob("*.md"):
+        fields: Dict[str, str] = {"date": "", "task_type": "", "root_cause": ""}
+        try:
+            with md.open("r", encoding="utf-8") as fp:
+                for raw in fp:
+                    line = raw.strip()
+                    if line.startswith("date: "):
+                        fields["date"] = line.replace("date: ", "", 1).strip()
+                    elif line.startswith("task_type: "):
+                        fields["task_type"] = line.replace("task_type: ", "", 1).strip()
+                    elif line.startswith("root_cause: "):
+                        fields["root_cause"] = line.replace("root_cause: ", "", 1).strip()
+                    if fields["date"] and fields["task_type"] and fields["root_cause"]:
+                        break
+        except UnicodeDecodeError:
+            continue
+        row_date = fields.get("date", "")
+        if not _is_date(row_date):
+            continue
+        if start and row_date < start:
+            continue
+        if end and row_date > end:
+            continue
+        if not fields.get("task_type") or not fields.get("root_cause"):
+            continue
+        entries.append(fields)
+    return entries
+
+
+def _find_skill_metrics(
+    sections: Sequence[Dict[str, object]], skill: str
+) -> Dict[str, str]:
+    for section in sections:
+        title = str(section.get("title", ""))
+        if title == f"Skill: {skill}":
+            metrics = section.get("metrics", {})
+            if isinstance(metrics, dict):
+                return {str(k): str(v) for k, v in metrics.items()}
+    return {}
+
+
+def _top_root_causes_for_skill(
+    skill_rows: Sequence[Dict[str, str]], kb_entries: Sequence[Dict[str, str]]
+) -> List[str]:
+    task_types = {
+        row.get("task_type", "").strip()
+        for row in skill_rows
+        if row.get("task_type", "").strip()
+    }
+    if not task_types:
+        return []
+    counter: Counter[str] = Counter()
+    for entry in kb_entries:
+        task_type = entry.get("task_type", "").strip()
+        if task_type not in task_types:
+            continue
+        cause = entry.get("root_cause", "").strip()
+        if cause:
+            counter[cause] += 1
+    return [f"{count}x {cause}" for cause, count in counter.most_common(3)]
+
+
+def build_skill_opportunity(
+    skill: str,
+    metrics: Dict[str, str],
+    skill_rows: Sequence[Dict[str, str]],
+    kb_entries: Sequence[Dict[str, str]],
+) -> Dict[str, object]:
+    reasons: List[str] = []
+    actions: List[str] = []
+    score = 0
+
+    status_hint = metrics.get("status", "")
+    if "no rows found" in status_hint:
+        return {
+            "skill": skill,
+            "status": "no_data",
+            "score": 0,
+            "reasons": ["No rows found for this skill in selected range."],
+            "suggested_actions": ["Run more tasks with this skill before evaluating optimization."],
+            "metrics": metrics,
+            "top_root_causes": [],
+            "sample_size_skill": 0,
+            "can_trigger": True,
+        }
+
+    if "insufficient baseline" in status_hint:
+        score += 50
+        reasons.append("Insufficient baseline on matching task types.")
+        actions.append("Collect at least 10 no-skill baseline samples on the same task types.")
+
+    sample_size_skill = _parse_int(metrics.get("sample_size_skill", ""))
+    if sample_size_skill is not None and sample_size_skill < 10:
+        score += 10
+        reasons.append(f"Skill sample size is low ({sample_size_skill}).")
+        actions.append("Increase sample size before finalizing optimization decisions.")
+
+    token_reduction = _parse_percent(metrics.get("token_reduction_pct", ""))
+    if token_reduction is not None and token_reduction < 0:
+        score += 35
+        reasons.append(f"Token cost is worse than baseline ({metrics.get('token_reduction_pct')}).")
+        actions.append("Tighten trigger guidance and reduce prompt context for this skill.")
+
+    duration_reduction = _parse_percent(metrics.get("duration_reduction_pct", ""))
+    if duration_reduction is not None and duration_reduction < 0:
+        score += 20
+        reasons.append(f"Duration is worse than baseline ({metrics.get('duration_reduction_pct')}).")
+        actions.append("Move repeated logic into deterministic scripts to reduce cycle time.")
+
+    success_delta = _parse_pp(metrics.get("success_rate_delta_pp", ""))
+    if success_delta is not None and success_delta < 0:
+        score += 35
+        reasons.append(f"Success rate regressed ({metrics.get('success_rate_delta_pp')}).")
+        actions.append("Add stricter validation gates and done criteria to this skill workflow.")
+
+    rework_delta = _parse_float(metrics.get("rework_rate_delta", ""))
+    if rework_delta is not None and rework_delta > 0:
+        score += 30
+        reasons.append(f"Rework rate increased ({metrics.get('rework_rate_delta')}).")
+        actions.append("Add rollback-safe checkpoints and earlier failure signals in the workflow.")
+
+    top_root_causes = _top_root_causes_for_skill(skill_rows, kb_entries)
+    if top_root_causes:
+        actions.append("Address top recurring root causes first when rewriting SKILL.md and scripts.")
+
+    if score >= 70:
+        status = "needs_optimization"
+    elif score >= 35:
+        status = "watch"
+    else:
+        status = "healthy"
+        if not reasons:
+            reasons.append("No major regression signal detected in selected range.")
+            actions.append("Keep current design and continue monitoring weekly.")
+
+    return {
+        "skill": skill,
+        "status": status,
+        "score": score,
+        "reasons": _unique_ordered(reasons),
+        "suggested_actions": _unique_ordered(actions),
+        "metrics": metrics,
+        "top_root_causes": top_root_causes,
+        "sample_size_skill": sample_size_skill if sample_size_skill is not None else "n/a",
+        "can_trigger": True,
+    }
+
+
+def discover_skill_opportunities(
+    paths: RuntimePaths,
+    filtered_data_file: Path,
+    filtered_rows: Sequence[Dict[str, str]],
+    start: str,
+    end: str,
+    cutover: str,
+) -> List[Dict[str, object]]:
+    skills = collect_skills(filtered_rows)
+    if not skills:
+        return []
+
+    kb_entries = load_kb_entries(paths.kb_dir, start, end)
+    opportunities: List[Dict[str, object]] = []
+    for skill in skills:
+        cmd = [str(paths.metrics_script), "--skill", skill]
+        if cutover:
+            cmd.extend(["--cutover", cutover])
+        raw_output = run_script(cmd, {"AOSO_DATA_FILE": str(filtered_data_file)})
+        sections = parse_metrics_output(raw_output)
+        metrics = _find_skill_metrics(sections, skill)
+        skill_rows = [
+            row
+            for row in filtered_rows
+            if row.get("used_skill", "").strip().lower() == "true"
+            and row.get("skill_name", "").strip() == skill
+        ]
+        item = build_skill_opportunity(skill, metrics, skill_rows, kb_entries)
+        item["raw_output"] = raw_output
+        opportunities.append(item)
+
+    opportunities.sort(key=lambda x: int(x.get("score", 0)), reverse=True)
+    return opportunities
+
+
+def parse_key_value_from_output(output: str, key: str) -> str:
+    prefix = f"{key}: "
+    for line in output.splitlines():
+        if line.startswith(prefix):
+            return line.replace(prefix, "", 1).strip()
+    return ""
+
+
 def run_weekly_review(
     paths: RuntimePaths, start: str, end: str
 ) -> str:
@@ -566,6 +975,19 @@ class DashboardHandler(BaseHTTPRequestHandler):
     def _bad_request(self, message: str) -> None:
         self._json({"error": message}, status=HTTPStatus.BAD_REQUEST)
 
+    def _validate_filters(
+        self, start: str, end: str, cutover: str
+    ) -> str:
+        if start and not _is_date(start):
+            return "invalid start date, expected YYYY-MM-DD"
+        if end and not _is_date(end):
+            return "invalid end date, expected YYYY-MM-DD"
+        if cutover and not _is_date(cutover):
+            return "invalid cutover date, expected YYYY-MM-DD"
+        if start and end and start > end:
+            return "start date must be <= end date"
+        return ""
+
     def do_GET(self) -> None:  # noqa: N802
         parsed = urlparse(self.path)
         path = parsed.path
@@ -580,7 +1002,17 @@ class DashboardHandler(BaseHTTPRequestHandler):
         if path == "/api/report":
             self.handle_report(query)
             return
+        if path == "/api/opportunities":
+            self.handle_opportunities(query)
+            return
         self._bad_request(f"unknown endpoint: {path}")
+
+    def do_POST(self) -> None:  # noqa: N802
+        parsed = urlparse(self.path)
+        if parsed.path == "/api/optimize":
+            self.handle_optimize()
+            return
+        self._bad_request(f"unknown endpoint: {parsed.path}")
 
     def handle_options(self) -> None:
         fieldnames, rows = read_task_rows(self.runtime_paths.data_file)
@@ -615,17 +1047,9 @@ class DashboardHandler(BaseHTTPRequestHandler):
         cutover = query.get("cutover", [""])[0]
         skill = query.get("skill", [""])[0].strip()
 
-        if start and not _is_date(start):
-            self._bad_request("invalid start date, expected YYYY-MM-DD")
-            return
-        if end and not _is_date(end):
-            self._bad_request("invalid end date, expected YYYY-MM-DD")
-            return
-        if cutover and not _is_date(cutover):
-            self._bad_request("invalid cutover date, expected YYYY-MM-DD")
-            return
-        if start and end and start > end:
-            self._bad_request("start date must be <= end date")
+        validation_error = self._validate_filters(start, end, cutover)
+        if validation_error:
+            self._bad_request(validation_error)
             return
 
         fieldnames, rows = read_task_rows(self.runtime_paths.data_file)
@@ -667,12 +1091,21 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 skill_raw = run_script(skill_cmd, {"AOSO_DATA_FILE": str(tmp_csv)})
 
             weekly_raw = run_weekly_review(self.runtime_paths, start, end)
+            opportunities = discover_skill_opportunities(
+                self.runtime_paths,
+                tmp_csv,
+                filtered_rows,
+                start,
+                end,
+                cutover,
+            )
 
         sections = parse_metrics_output("\n".join([overall_raw, skill_raw]).strip())
         payload = {
             "row_count": len(filtered_rows),
             "sections": sections,
             "flat_metrics": flatten_metrics(sections),
+            "opportunities": opportunities,
             "overall_raw": overall_raw,
             "skill_raw": skill_raw,
             "weekly_raw": weekly_raw,
@@ -680,6 +1113,88 @@ class DashboardHandler(BaseHTTPRequestHandler):
             "data_file": str(self.runtime_paths.data_file),
         }
         self._json(payload)
+
+    def handle_opportunities(self, query: Dict[str, List[str]]) -> None:
+        start = query.get("start", [""])[0]
+        end = query.get("end", [""])[0]
+        cutover = query.get("cutover", [""])[0]
+        validation_error = self._validate_filters(start, end, cutover)
+        if validation_error:
+            self._bad_request(validation_error)
+            return
+
+        fieldnames, rows = read_task_rows(self.runtime_paths.data_file)
+        if not fieldnames:
+            self._json({"opportunities": [], "row_count": 0})
+            return
+
+        filtered_rows = filter_rows(rows, start, end)
+        with tempfile.TemporaryDirectory(prefix="aoso-dashboard-op-") as tmp_dir:
+            tmp_csv = Path(tmp_dir) / "filtered.csv"
+            write_filtered_csv(fieldnames, filtered_rows, tmp_csv)
+            opportunities = discover_skill_opportunities(
+                self.runtime_paths,
+                tmp_csv,
+                filtered_rows,
+                start,
+                end,
+                cutover,
+            )
+        self._json({"opportunities": opportunities, "row_count": len(filtered_rows)})
+
+    def handle_optimize(self) -> None:
+        try:
+            content_length = int(self.headers.get("Content-Length", "0"))
+        except ValueError:
+            self._bad_request("invalid Content-Length")
+            return
+
+        raw = self.rfile.read(content_length) if content_length > 0 else b"{}"
+        try:
+            payload = json.loads(raw.decode("utf-8"))
+        except json.JSONDecodeError:
+            self._bad_request("invalid JSON body")
+            return
+        if not isinstance(payload, dict):
+            self._bad_request("request body must be an object")
+            return
+
+        skill = str(payload.get("skill", "")).strip()
+        start = str(payload.get("start", "")).strip()
+        end = str(payload.get("end", "")).strip()
+        cutover = str(payload.get("cutover", "")).strip()
+        if not skill:
+            self._bad_request("field `skill` is required")
+            return
+
+        validation_error = self._validate_filters(start, end, cutover)
+        if validation_error:
+            self._bad_request(validation_error)
+            return
+
+        cmd: List[str] = [str(self.runtime_paths.optimize_script), "--skill", skill]
+        if start:
+            cmd.extend(["--start", start])
+        if end:
+            cmd.extend(["--end", end])
+        if cutover:
+            cmd.extend(["--cutover", cutover])
+
+        try:
+            output = run_script(cmd, {})
+        except RuntimeError as exc:
+            self._bad_request(str(exc))
+            return
+        self._json(
+            {
+                "skill": skill,
+                "report_file": parse_key_value_from_output(output, "generated optimization report"),
+                "optimization_status": parse_key_value_from_output(output, "optimization_status"),
+                "opportunity_score": parse_key_value_from_output(output, "opportunity_score"),
+                "raw_output": output,
+                "generated_at": datetime.now().isoformat(timespec="seconds"),
+            }
+        )
 
 
 def main() -> int:
@@ -695,6 +1210,8 @@ def main() -> int:
         raise SystemExit(f"missing script: {paths.metrics_script}")
     if not paths.weekly_script.exists():
         raise SystemExit(f"missing script: {paths.weekly_script}")
+    if not paths.optimize_script.exists():
+        raise SystemExit(f"missing script: {paths.optimize_script}")
 
     handler = DashboardHandler
     handler.runtime_paths = paths

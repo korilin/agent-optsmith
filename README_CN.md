@@ -21,7 +21,8 @@
 1. 一条命令自动完成记录 + 分析 + 周报。
 2. skill 效果评估（`token_reduction_pct`、`duration_reduction_pct` 等）。
 3. 本地可筛选 Web 看板（日期、skill、cutover、指标关键字）。
-4. 指定切换日期后的 pre/post 对比结果。
+4. skill 优化机会自动发现，并支持手动触发优化方案生成。
+5. 指定切换日期后的 pre/post 对比结果。
 
 数据默认在你的项目目录 `.agent-loop-data/` 下：
 
@@ -85,7 +86,7 @@ SKILL_HOME="${CODEX_HOME:-$HOME/.codex}/skills/agent-self-optimizing-loop"
   --rework-count 0
 ```
 
-2. 打开看板做筛选和查看：
+2. 打开看板做筛选、优化发现和手动触发：
 
 ```bash
 SKILL_HOME="${CODEX_HOME:-$HOME/.codex}/skills/agent-self-optimizing-loop"
@@ -93,6 +94,7 @@ SKILL_HOME="${CODEX_HOME:-$HOME/.codex}/skills/agent-self-optimizing-loop"
 ```
 
 然后访问 `http://127.0.0.1:8765`。
+在 `Skill Optimization Discovery` 区域可直接触发对应 skill 的优化方案生成。
 
 3. 如需原始命令输出（可选）：
 

@@ -10,6 +10,7 @@ runtime_scripts=(
   "metrics_report.sh"
   "weekly_review.sh"
   "auto_run_loop.sh"
+  "optimize_skill.sh"
   "dashboard_server.sh"
   "dashboard_server.py"
 )
@@ -21,6 +22,7 @@ shell_runtime_scripts=(
   "metrics_report.sh"
   "weekly_review.sh"
   "auto_run_loop.sh"
+  "optimize_skill.sh"
   "dashboard_server.sh"
 )
 for f in "${shell_runtime_scripts[@]}"; do
@@ -79,6 +81,10 @@ AOSO_REPORT_DIR="${tmp_dir}/rootdata/reports" \
   --duration-sec "13" \
   --success "true" \
   --skip-weekly >/dev/null
+AOSO_DATA_FILE="${tmp_dir}/rootdata/metrics/task-runs.csv" \
+AOSO_KB_DIR="${tmp_dir}/rootdata/knowledge-base/errors" \
+AOSO_OPT_REPORT_DIR="${tmp_dir}/rootdata/reports/skill-optimization" \
+  "${repo_root}/scripts/optimize_skill.sh" --skill "agent-self-optimizing-loop" >/dev/null
 "${repo_root}/scripts/dashboard_server.sh" --host "127.0.0.1" --port "8876" >/dev/null 2>&1 &
 dashboard_pid_root=$!
 sleep 1
@@ -110,6 +116,8 @@ cd "${tmp_dir}/skill-project"
   --duration-sec "14" \
   --success "true" \
   --skip-weekly >/dev/null
+AOSO_OPT_REPORT_DIR="${tmp_dir}/skill-project/.agent-loop-data/reports/skill-optimization" \
+  "${repo_root}/skills/agent-self-optimizing-loop/scripts/optimize_skill.sh" --skill "agent-self-optimizing-loop" >/dev/null
 "${repo_root}/skills/agent-self-optimizing-loop/scripts/dashboard_server.sh" --host "127.0.0.1" --port "8877" >/dev/null 2>&1 &
 dashboard_pid_skill=$!
 sleep 1

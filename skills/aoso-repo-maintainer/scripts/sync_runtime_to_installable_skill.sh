@@ -11,6 +11,7 @@ runtime_scripts=(
   "metrics_report.sh"
   "weekly_review.sh"
   "auto_run_loop.sh"
+  "optimize_skill.sh"
   "dashboard_server.sh"
   "dashboard_server.py"
 )

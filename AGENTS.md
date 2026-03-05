@@ -61,6 +61,7 @@ Use project-local skill `aoso-repo-maintainer` for repository maintenance tasks:
 
 - Prefer `scripts/auto_run_loop.sh` / `skills/agent-self-optimizing-loop/scripts/auto_run_loop.sh` over manual multi-command operation.
 - Prefer dashboard filtering via `scripts/dashboard_server.sh` for interactive metric analysis.
+- Use `scripts/optimize_skill.sh` (or dashboard trigger) to generate explicit optimization plans per skill.
 
 ## Error KB Policy
 

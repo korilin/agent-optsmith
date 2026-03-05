@@ -17,6 +17,7 @@ Use this skill to operationalize and measure continuous optimization in any proj
 - Do not ask the user to run logging/report commands manually when this skill is active.
 - At task completion, run `scripts/auto_run_loop.sh` automatically with task metadata.
 - Use `scripts/dashboard_server.sh` for interactive filtering instead of manual output parsing.
+- Use dashboard optimization discovery and allow manual trigger via `scripts/optimize_skill.sh`.
 
 ## Primary Workflow
 
@@ -50,12 +51,15 @@ SKILL_HOME="${CODEX_HOME:-$HOME/.codex}/skills/agent-self-optimizing-loop"
 "${SKILL_HOME}/scripts/dashboard_server.sh" --host 127.0.0.1 --port 8765
 ```
 
+Use `Skill Optimization Discovery` in the dashboard to trigger per-skill optimization plans.
+
 5. Optional direct commands (if you need script-level outputs):
 ```bash
 SKILL_HOME="${CODEX_HOME:-$HOME/.codex}/skills/agent-self-optimizing-loop"
 "${SKILL_HOME}/scripts/metrics_report.sh" --all
 "${SKILL_HOME}/scripts/metrics_report.sh" --skill log-analysis-helper
 "${SKILL_HOME}/scripts/metrics_report.sh" --all --cutover 2026-03-01
+"${SKILL_HOME}/scripts/optimize_skill.sh" --skill log-analysis-helper
 ```
 
 ## Interpretation Rules
@@ -82,5 +86,6 @@ SKILL_HOME="${CODEX_HOME:-$HOME/.codex}/skills/agent-self-optimizing-loop"
 - `scripts/log_task_run.sh`: Append one standardized task-run record.
 - `scripts/weekly_review.sh`: Build weekly optimization report from error KB.
 - `scripts/metrics_report.sh`: Compute overall, per-skill, and pre/post metrics.
+- `scripts/optimize_skill.sh`: Generate one skill optimization plan with opportunity score.
 - `scripts/dashboard_server.sh`: Start local dashboard web server.
 - `scripts/dashboard_server.py`: Dashboard backend and UI.

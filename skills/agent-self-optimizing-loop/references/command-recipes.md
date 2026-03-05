@@ -66,3 +66,10 @@ SKILL_HOME="${CODEX_HOME:-$HOME/.codex}/skills/agent-self-optimizing-loop"
 SKILL_HOME="${CODEX_HOME:-$HOME/.codex}/skills/agent-self-optimizing-loop"
 "${SKILL_HOME}/scripts/dashboard_server.sh" --host 127.0.0.1 --port 8765
 ```
+
+## 8) Trigger optimization plan for one skill
+
+```bash
+SKILL_HOME="${CODEX_HOME:-$HOME/.codex}/skills/agent-self-optimizing-loop"
+"${SKILL_HOME}/scripts/optimize_skill.sh" --skill log-analysis-helper
+```

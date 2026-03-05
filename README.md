@@ -21,7 +21,8 @@ After setup, you get a repeatable loop with concrete outputs:
 1. Automatic run logging + metrics + weekly review with one command.
 2. Skill impact reports (`token_reduction_pct`, `duration_reduction_pct`, etc.).
 3. Filterable local web dashboard (date, skill, cutover, metric key filter).
-4. Clear pre/post comparison around a chosen cutover date.
+4. Skill optimization discovery with manual trigger for self-optimization plans.
+5. Clear pre/post comparison around a chosen cutover date.
 
 In your project, data is stored under `.agent-loop-data/`:
 
@@ -85,7 +86,7 @@ SKILL_HOME="${CODEX_HOME:-$HOME/.codex}/skills/agent-self-optimizing-loop"
   --rework-count 0
 ```
 
-2. Open dashboard for filtering and visualization:
+2. Open dashboard for filtering, optimization discovery, and manual trigger:
 
 ```bash
 SKILL_HOME="${CODEX_HOME:-$HOME/.codex}/skills/agent-self-optimizing-loop"
@@ -93,6 +94,7 @@ SKILL_HOME="${CODEX_HOME:-$HOME/.codex}/skills/agent-self-optimizing-loop"
 ```
 
 Then open `http://127.0.0.1:8765`.
+Use the `Skill Optimization Discovery` section to trigger optimization for one skill.
 
 3. Optional direct report commands (if you need raw CLI output):
 

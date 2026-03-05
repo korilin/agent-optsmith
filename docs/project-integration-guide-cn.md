@@ -66,13 +66,14 @@ SKILL_HOME="${CODEX_HOME:-$HOME/.codex}/skills/agent-self-optimizing-loop"
   --duration-sec 420 \
   --success true
 
-# 打开本地看板（日期/skill/cutover/指标筛选）
+# 打开本地看板（日期/skill/cutover/指标筛选 + 优化发现）
 "${SKILL_HOME}/scripts/dashboard_server.sh" --host 127.0.0.1 --port 8765
 
 # 可选：CLI 原始输出
 "${SKILL_HOME}/scripts/metrics_report.sh" --all
 "${SKILL_HOME}/scripts/metrics_report.sh" --skill log-analysis-helper
 "${SKILL_HOME}/scripts/metrics_report.sh" --all --cutover 2026-03-01
+"${SKILL_HOME}/scripts/optimize_skill.sh" --skill log-analysis-helper
 ```
 
 ## 方案 B：Submodule 引入整仓
@@ -103,7 +104,8 @@ AOSO_DATA_FILE=.agent-loop-data/metrics/task-runs.csv \
 1. 在工程 `AGENTS.md` 加约定：命中 `.agent-loop-data/skills/<skill>/SKILL.md` 时先用对应 skill。
 2. 每个任务结束执行 `auto_run_loop.sh`，由脚本自动采集和分析。
 3. 每个失败事件写一条 error entry（脚本自动分析会读取这些条目）。
-4. 用 dashboard 做日期/skill/指标筛选，再把有效规则回写到 `AGENTS.md` 或 skill。
+4. 用 dashboard 做日期/skill/指标筛选，查看 `Skill Optimization Discovery` 并按需手动触发优化。
+5. 把确认有效的规则与优化结果回写到 `AGENTS.md` 或 skill。
 
 ## 如何评估是否有效
 
