@@ -45,6 +45,10 @@ skills/aoso-repo-maintainer/scripts/check_readme_sync.sh
 skills/aoso-repo-maintainer/scripts/auto_commit.sh --message "docs: update workflow"
 ```
 
+`auto_commit.sh` now runs `scripts/auto_run_loop.sh` automatically before commit
+to persist one task-run record and refresh metrics.
+Use `--skip-loop` only for exceptional cases.
+
 6. If this skill changed and should be active locally, install it:
 ```bash
 skills/aoso-repo-maintainer/scripts/install_to_codex.sh
@@ -62,5 +66,5 @@ skills/aoso-repo-maintainer/scripts/install_to_codex.sh
 - `scripts/sync_runtime_to_installable_skill.sh`: Copy runtime scripts into installable skill.
 - `scripts/check_readme_sync.sh`: Enforce README English/Chinese synchronization.
 - `scripts/validate_repo_workflow.sh`: Syntax/parity/smoke checks for this repository.
-- `scripts/auto_commit.sh`: Stage all changes and create one non-interactive commit.
+- `scripts/auto_commit.sh`: Auto-run loop logging, stage all changes, and create one non-interactive commit.
 - `scripts/install_to_codex.sh`: Install this project-local skill into `$CODEX_HOME/skills`.

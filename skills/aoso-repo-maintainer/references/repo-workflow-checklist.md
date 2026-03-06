@@ -23,6 +23,9 @@
    - `docs/project-integration-guide-cn.md`
 5. Auto-commit after all checks pass:
    - `skills/aoso-repo-maintainer/scripts/auto_commit.sh --message "<commit-message>"`
+   - default behavior includes task logging via `scripts/auto_run_loop.sh` before commit
+   - if strict telemetry is required, add `--enforce-telemetry`
+   - skip logging only for exceptions: `--skip-loop`
 
 ## Optional local skill install
 
