@@ -85,19 +85,20 @@ git submodule add git@github.com:korilin/agent-auto-self-optimizing-closed-loop.
 git submodule update --init --recursive
 
 mkdir -p .agent-loop-data/metrics .agent-loop-data/knowledge-base/errors .agent-loop-data/reports .agent-loop-data/skills
-cp .agent-loop/metrics/task-runs.csv .agent-loop-data/metrics/task-runs.csv
 ```
 
 命令示例：
 
 ```bash
 # 自动执行：记录 + 指标分析 + 周报
-AOSO_DATA_FILE=.agent-loop-data/metrics/task-runs.csv \
-  ./.agent-loop/scripts/auto_run_loop.sh --task-id TASK-1001 --task-type debug --project my-service --model gpt-5 --used-skill true --skill-name log-analysis-helper --total-tokens 1820 --duration-sec 420 --success true
+./.agent-loop/scripts/auto_run_loop.sh --task-id TASK-1001 --task-type debug --project my-service --model gpt-5 --used-skill true --skill-name log-analysis-helper --total-tokens 1820 --duration-sec 420 --success true
 
 # 启动看板
 ./.agent-loop/scripts/dashboard_server.sh --host 127.0.0.1 --port 8765
 ```
+
+说明：
+- 从宿主仓库根目录调用 `./.agent-loop/scripts/*` 时，会自动使用宿主仓库下的 `./.agent-loop-data/` 作为默认数据目录。
 
 ## 在目标工程如何真正生效
 

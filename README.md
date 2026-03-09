@@ -100,6 +100,9 @@ Then open `http://127.0.0.1:8765`.
 Use the `Skill Optimization Discovery` section to optimize one skill immediately.
 Use `New Skill Recommendations` to create-and-optimize a new skill immediately.
 
+Submodule mode note:
+- If you run scripts via `./.agent-loop/scripts/*` from your project root, defaults now target your project-local `./.agent-loop-data/` automatically.
+
 3. Optional direct report commands (if you need raw CLI output):
 
 ```bash

@@ -11,7 +11,12 @@ if [[ -f "${SCRIPT_DIR}/../SKILL.md" ]]; then
 else
   mode="root"
   root_dir="$(cd "${SCRIPT_DIR}/.." && pwd)"
-  workspace_dir="${AOSO_WORKSPACE_DIR:-${root_dir}}"
+  if [[ "$(basename "${root_dir}")" == ".agent-loop" ]]; then
+    workspace_dir="${AOSO_WORKSPACE_DIR:-$(pwd)}"
+  else
+    workspace_dir="${AOSO_WORKSPACE_DIR:-${root_dir}}"
+  fi
+  workspace_dir="$(cd "${workspace_dir}" && pwd)"
   setup_script=""
 fi
 

@@ -845,10 +845,16 @@ def resolve_runtime_paths() -> RuntimePaths:
         local_skills_dir_default = workspace / ".agent-loop-data/skills"
     else:
         root_dir = script_dir.parent
-        data_file_default = root_dir / "metrics/task-runs.csv"
-        kb_dir_default = root_dir / "knowledge-base/errors"
-        report_dir_default = root_dir / "reports"
-        local_skills_dir_default = root_dir / "skills"
+        if root_dir.name == ".agent-loop" and workspace != root_dir:
+            data_file_default = workspace / ".agent-loop-data/metrics/task-runs.csv"
+            kb_dir_default = workspace / ".agent-loop-data/knowledge-base/errors"
+            report_dir_default = workspace / ".agent-loop-data/reports"
+            local_skills_dir_default = workspace / ".agent-loop-data/skills"
+        else:
+            data_file_default = root_dir / "metrics/task-runs.csv"
+            kb_dir_default = root_dir / "knowledge-base/errors"
+            report_dir_default = root_dir / "reports"
+            local_skills_dir_default = root_dir / "skills"
 
     data_file = Path(os.environ.get("AOSO_DATA_FILE", str(data_file_default))).resolve()
     kb_dir = Path(os.environ.get("AOSO_KB_DIR", str(kb_dir_default))).resolve()

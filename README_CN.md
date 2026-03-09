@@ -100,6 +100,9 @@ SKILL_HOME="${CODEX_HOME:-$HOME/.codex}/skills/agent-self-optimizing-loop"
 在 `Skill Optimization Discovery` 区域可对现有 skill 立即执行优化。
 在 `New Skill Recommendations` 区域可一键创建并优化新增 skill。
 
+Submodule 模式说明：
+- 当你在项目根目录通过 `./.agent-loop/scripts/*` 调用脚本时，默认会自动写入项目本地 `./.agent-loop-data/`。
+
 3. 如需原始命令输出（可选）：
 
 ```bash

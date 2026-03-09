@@ -11,6 +11,7 @@ Use this skill to operationalize and measure continuous optimization in any proj
 
 - Resolve the skill home as: `${CODEX_HOME:-$HOME/.codex}/skills/agent-self-optimizing-loop`
 - Use project-local data under `.agent-loop-data/`
+- In submodule setups, running `./.agent-loop/scripts/*` from project root now defaults to project-local `.agent-loop-data/`.
 
 ## Automation Behavior
 
