@@ -1,6 +1,6 @@
 # Agent Auto Self-Optimizing Closed Loop (User Guide)
 
-<!-- README_SYNC_VERSION: 2026-03-06 -->
+<!-- README_SYNC_VERSION: 2026-03-09 -->
 
 This project helps you run a measurable self-optimization loop for AI coding work.
 If your goal is to use the skill in your own repository, this file is the entry point.
@@ -86,8 +86,10 @@ SKILL_HOME="${CODEX_HOME:-$HOME/.codex}/skills/agent-self-optimizing-loop"
   --rework-count 0
 ```
 
-If runtime telemetry is available, pass `total_tokens` / `duration_sec` (or set env vars like
-`CODEX_TOTAL_TOKENS` and `CODEX_TASK_DURATION_SEC`) to avoid placeholder zeros.
+If telemetry is not passed explicitly, `auto_run_loop.sh` will try to resolve real values from
+local Codex session logs (`$CODEX_HOME/sessions` and `$CODEX_HOME/archived_sessions`, using
+`CODEX_THREAD_ID` when available). For non-Codex runners, keep passing `total_tokens` /
+`duration_sec` (or set env vars such as `CODEX_TOTAL_TOKENS` and `CODEX_TASK_DURATION_SEC`).
 
 2. Open dashboard for filtering, optimization discovery, and direct optimization:
 

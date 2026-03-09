@@ -40,6 +40,9 @@ CODEX_TASK_DURATION_SEC=420 \
   --enforce-telemetry
 ```
 
+If explicit telemetry is omitted, `auto_run_loop.sh` will try to resolve values from local
+Codex session logs (`$CODEX_HOME/sessions` and `$CODEX_HOME/archived_sessions`).
+
 ## 3) Log one task run (direct)
 
 ```bash

@@ -1,6 +1,6 @@
 # Agent 自动自优化闭环（用户手册）
 
-<!-- README_SYNC_VERSION: 2026-03-06 -->
+<!-- README_SYNC_VERSION: 2026-03-09 -->
 
 这个项目用于在你的工程里落地“可量化”的 AI 编码自优化闭环。
 如果你的目标是“作为 skill 使用者快速上手”，请从这份 README 开始。
@@ -86,8 +86,10 @@ SKILL_HOME="${CODEX_HOME:-$HOME/.codex}/skills/agent-self-optimizing-loop"
   --rework-count 0
 ```
 
-如果运行时能提供真实遥测，请传入 `total_tokens` / `duration_sec`
-（或设置 `CODEX_TOTAL_TOKENS`、`CODEX_TASK_DURATION_SEC`），避免写入占位 0 值。
+如果未显式传入 telemetry，`auto_run_loop.sh` 会尝试从本地 Codex session 日志
+自动解析真实值（`$CODEX_HOME/sessions` 和 `$CODEX_HOME/archived_sessions`，有
+`CODEX_THREAD_ID` 时优先按线程匹配）。在非 Codex 运行器里，仍建议显式传入
+`total_tokens` / `duration_sec`（或设置 `CODEX_TOTAL_TOKENS`、`CODEX_TASK_DURATION_SEC`）。
 
 2. 打开看板做筛选、优化发现和直接执行：
 

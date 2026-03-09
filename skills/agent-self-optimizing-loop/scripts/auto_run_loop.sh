@@ -34,6 +34,8 @@ rework_count="${AOSO_REWORK_COUNT:-0}"
 cutover="${AOSO_CUTOVER:-}"
 run_weekly="true"
 enforce_telemetry="false"
+tokens_from_session="false"
+duration_from_session="false"
 
 usage() {
   cat <<'EOF'
@@ -70,6 +72,9 @@ Telemetry values are resolved in this order:
       duration: AOSO_DURATION_SEC, CODEX_TASK_DURATION_SEC, TASK_DURATION_SEC
   - fallback duration from task start timestamp:
       AOSO_TASK_START_TS or TASK_START_TS (unix epoch seconds)
+  - fallback from local Codex session logs:
+      CODEX_HOME/sessions and CODEX_HOME/archived_sessions
+      (thread match uses CODEX_THREAD_ID when available)
   - final fallback: 0
 EOF
 }
@@ -95,6 +100,151 @@ resolve_duration_from_start_ts() {
     return 1
   fi
   printf '%s' "$((now_ts - start_ts))"
+}
+
+resolve_codex_session_file() {
+  local codex_home="${CODEX_HOME:-$HOME/.codex}"
+  local session_override
+  session_override="$(first_non_empty \
+    "${AOSO_CODEX_SESSION_FILE:-}" \
+    "${CODEX_SESSION_FILE:-}" || true)"
+  if [[ -n "${session_override}" && -f "${session_override}" ]]; then
+    printf '%s' "${session_override}"
+    return 0
+  fi
+
+  local thread_id
+  thread_id="$(first_non_empty \
+    "${AOSO_CODEX_THREAD_ID:-}" \
+    "${CODEX_THREAD_ID:-}" || true)"
+
+  local candidate_dirs=(
+    "${codex_home}/sessions"
+    "${codex_home}/archived_sessions"
+  )
+  local candidate=""
+  local dir
+
+  if [[ -n "${thread_id}" ]]; then
+    for dir in "${candidate_dirs[@]}"; do
+      if [[ -d "${dir}" ]]; then
+        candidate="$(find "${dir}" -type f -name "rollout-*-${thread_id}.jsonl" 2>/dev/null | sort | tail -n 1 || true)"
+        if [[ -n "${candidate}" ]]; then
+          printf '%s' "${candidate}"
+          return 0
+        fi
+      fi
+    done
+  fi
+
+  for dir in "${candidate_dirs[@]}"; do
+    if [[ -d "${dir}" ]]; then
+      candidate="$(find "${dir}" -type f -name "rollout-*.jsonl" 2>/dev/null | sort | tail -n 1 || true)"
+      if [[ -n "${candidate}" ]]; then
+        printf '%s' "${candidate}"
+        return 0
+      fi
+    fi
+  done
+
+  return 1
+}
+
+resolve_telemetry_from_codex_session() {
+  local session_file="$1"
+  if [[ ! -f "${session_file}" ]]; then
+    return 1
+  fi
+  if ! command -v python3 >/dev/null 2>&1; then
+    return 1
+  fi
+
+  python3 - "${session_file}" <<'PY'
+import datetime as dt
+import json
+import sys
+
+
+def parse_ts(raw):
+    if not isinstance(raw, str) or not raw:
+        return None
+    normalized = raw
+    if normalized.endswith("Z"):
+        normalized = normalized[:-1] + "+00:00"
+    try:
+        return dt.datetime.fromisoformat(normalized).timestamp()
+    except ValueError:
+        return None
+
+
+session_path = sys.argv[1]
+session_start_ts = None
+turn_start_ts = None
+last_event_ts = None
+turn_token_sum = 0
+turn_token_count = 0
+last_token_value = 0
+
+with open(session_path, "r", encoding="utf-8") as handle:
+    for raw_line in handle:
+        line = raw_line.strip()
+        if not line:
+            continue
+        try:
+            obj = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+
+        event_ts = parse_ts(obj.get("timestamp"))
+        if event_ts is not None:
+            last_event_ts = event_ts
+
+        entry_type = obj.get("type")
+        payload = obj.get("payload")
+
+        if entry_type == "session_meta":
+            session_start_ts = event_ts
+            continue
+
+        if entry_type == "turn_context":
+            turn_start_ts = event_ts
+            turn_token_sum = 0
+            turn_token_count = 0
+            continue
+
+        if entry_type != "event_msg" or not isinstance(payload, dict):
+            continue
+        if payload.get("type") != "token_count":
+            continue
+
+        info = payload.get("info") or {}
+        last_usage = info.get("last_token_usage") or {}
+        token_value = last_usage.get("total_tokens")
+        if isinstance(token_value, (int, float)):
+            token_int = int(token_value)
+            if token_int < 0:
+                token_int = 0
+            last_token_value = token_int
+            if turn_start_ts is not None:
+                turn_token_sum += token_int
+                turn_token_count += 1
+
+tokens = turn_token_sum if turn_token_count > 0 else last_token_value
+if tokens < 0:
+    tokens = 0
+
+duration = 0
+start_ts = turn_start_ts if turn_start_ts is not None else session_start_ts
+if start_ts is not None and last_event_ts is not None and last_event_ts >= start_ts:
+    duration = int(last_event_ts - start_ts)
+if duration < 0:
+    duration = 0
+
+if duration == 0 and tokens > 0:
+    duration = 1
+
+print(f"{tokens} {duration}")
+PY
 }
 
 while [[ $# -gt 0 ]]; do
@@ -156,6 +306,24 @@ if [[ -z "${duration_sec}" ]]; then
     "${TASK_START_TS:-}" || true)" || true)"
 fi
 
+if [[ -z "${total_tokens}" || -z "${duration_sec}" ]]; then
+  session_file="$(resolve_codex_session_file || true)"
+  if [[ -n "${session_file}" ]]; then
+    session_telemetry="$(resolve_telemetry_from_codex_session "${session_file}" || true)"
+    if [[ -n "${session_telemetry}" ]]; then
+      read -r session_tokens session_duration <<<"${session_telemetry}"
+      if [[ -z "${total_tokens}" && "${session_tokens:-}" =~ ^[0-9]+$ ]]; then
+        total_tokens="${session_tokens}"
+        tokens_from_session="true"
+      fi
+      if [[ -z "${duration_sec}" && "${session_duration:-}" =~ ^[0-9]+$ ]]; then
+        duration_sec="${session_duration}"
+        duration_from_session="true"
+      fi
+    fi
+  fi
+fi
+
 if [[ -z "${total_tokens}" ]]; then
   total_tokens="0"
 fi
@@ -180,6 +348,10 @@ fi
 
 if [[ "${total_tokens}" == "0" || "${duration_sec}" == "0" ]]; then
   echo "warning: telemetry incomplete (total_tokens=${total_tokens}, duration_sec=${duration_sec})"
+fi
+
+if [[ "${tokens_from_session}" == "true" || "${duration_from_session}" == "true" ]]; then
+  echo "info: telemetry resolved from Codex session log"
 fi
 
 metrics_args=(--all)

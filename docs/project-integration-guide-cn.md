@@ -76,6 +76,10 @@ SKILL_HOME="${CODEX_HOME:-$HOME/.codex}/skills/agent-self-optimizing-loop"
 "${SKILL_HOME}/scripts/optimize_skill.sh" --skill log-analysis-helper
 ```
 
+补充：如果没有显式传入 `--total-tokens/--duration-sec`，`auto_run_loop.sh` 会优先从本地
+Codex session 日志自动回填（`$CODEX_HOME/sessions` 与 `$CODEX_HOME/archived_sessions`，
+有 `CODEX_THREAD_ID` 时按线程匹配）。非 Codex 场景建议继续显式传参。
+
 ## 方案 B：Submodule 引入整仓
 
 在目标工程根目录执行：
