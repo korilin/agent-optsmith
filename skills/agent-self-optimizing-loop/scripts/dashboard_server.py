@@ -231,6 +231,14 @@ HTML_PAGE = """<!doctype html>
       border-color: #2f5c8f;
       background: #2f5c8f;
     }
+    .trigger-btn.is-done {
+      border-color: #1f6b39;
+      background: #1f6b39;
+    }
+    .trigger-btn.is-done[disabled] {
+      opacity: 1;
+      cursor: default;
+    }
     .rec-wrap {
       margin-top: 10px;
       display: grid;
@@ -271,11 +279,13 @@ HTML_PAGE = """<!doctype html>
       color: #20333f;
     }
     .hint {
-      color: var(--warn);
+      color: var(--muted);
       font-size: 12px;
       min-height: 16px;
       margin-top: 8px;
     }
+    .hint.warn { color: var(--warn); }
+    .hint.ok { color: #1f6b39; }
     @media (max-width: 900px) {
       .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -405,6 +415,7 @@ HTML_PAGE = """<!doctype html>
         msg_init_failed: "Initialization failed",
         msg_opt_failed: "Optimize failed",
         msg_opt_done: "Optimization completed",
+        msg_create_done: "Skill created and optimization completed",
         log_skill: "skill",
         log_target: "target",
         log_action: "action",
@@ -462,6 +473,7 @@ HTML_PAGE = """<!doctype html>
         msg_init_failed: "初始化失败",
         msg_opt_failed: "优化触发失败",
         msg_opt_done: "优化已完成",
+        msg_create_done: "Skill 已创建并完成优化",
         log_skill: "skill",
         log_target: "目标",
         log_action: "动作",
@@ -476,6 +488,8 @@ HTML_PAGE = """<!doctype html>
     let currentLang = localStorage.getItem("aoso_dashboard_lang") || "en";
     if (!I18N[currentLang]) currentLang = "en";
     let lastReport = null;
+    const optimizedExistingSkills = new Set();
+    const optimizedNewSkills = new Set();
 
     function t(key) {
       const dict = I18N[currentLang] || I18N.en;
@@ -516,6 +530,17 @@ HTML_PAGE = """<!doctype html>
       const response = await fetch(url);
       if (!response.ok) throw new Error(await response.text());
       return response.json();
+    }
+
+    function newSkillKey(skill, taskType) {
+      return `${skill || ""}::${taskType || ""}`;
+    }
+
+    function setHint(kind, message) {
+      nodes.hint.classList.remove("warn", "ok");
+      if (kind === "warn") nodes.hint.classList.add("warn");
+      if (kind === "ok") nodes.hint.classList.add("ok");
+      nodes.hint.textContent = message || "";
     }
 
     function renderOptions(payload) {
@@ -589,7 +614,10 @@ HTML_PAGE = """<!doctype html>
         const actions = (item.suggested_actions || []).map((a) => `<li>${a}</li>`).join("");
         const roots = (item.top_root_causes || []).map((c) => `<li>${c}</li>`).join("");
         const status = item.status || "unknown";
-        const disabled = item.can_trigger ? "" : "disabled";
+        const isOptimized = optimizedExistingSkills.has(item.skill);
+        const disabled = (item.can_trigger && !isOptimized) ? "" : "disabled";
+        const label = isOptimized ? t("btn_optimize_done") : t("btn_optimize_now");
+        const doneClass = isOptimized ? "is-done" : "";
         card.innerHTML = `
           <div class="op-head">
             <p class="op-title">${item.skill}</p>
@@ -602,7 +630,7 @@ HTML_PAGE = """<!doctype html>
           <ul class="mini-list">${actions || `<li>${t("label_none")}</li>`}</ul>
           <div style="font-size:12px; margin:8px 0 6px;">${t("label_top_root_causes")}</div>
           <ul class="mini-list">${roots || `<li>${t("label_none")}</li>`}</ul>
-          <button class="trigger-btn trigger-existing-btn" data-skill="${escAttr(item.skill)}" data-default-label="${t("btn_optimize_now")}" ${disabled}>${t("btn_optimize_now")}</button>
+          <button class="trigger-btn trigger-existing-btn ${doneClass}" data-skill="${escAttr(item.skill)}" data-default-label="${t("btn_optimize_now")}" ${disabled}>${label}</button>
         `;
         nodes.opportunities.appendChild(card);
       }
@@ -622,6 +650,11 @@ HTML_PAGE = """<!doctype html>
         const actions = (item.suggested_actions || []).map((a) => `<li>${a}</li>`).join("");
         const roots = (item.top_root_causes || []).map((c) => `<li>${c}</li>`).join("");
         const status = item.status || "watch";
+        const key = newSkillKey(item.suggested_skill_name, item.task_type);
+        const isOptimized = optimizedNewSkills.has(key);
+        const label = isOptimized ? t("btn_create_done") : t("btn_create_and_optimize");
+        const disabled = isOptimized ? "disabled" : "";
+        const doneClass = isOptimized ? "is-done" : "";
         card.innerHTML = `
           <div class="op-head">
             <p class="op-title">${item.task_type}</p>
@@ -636,7 +669,7 @@ HTML_PAGE = """<!doctype html>
           <ul class="mini-list">${actions || `<li>${t("label_none")}</li>`}</ul>
           <div style="font-size:12px; margin:8px 0 6px;">${t("label_top_root_causes")}</div>
           <ul class="mini-list">${roots || `<li>${t("label_none")}</li>`}</ul>
-          <button class="trigger-btn new-skill trigger-new-btn" data-skill="${escAttr(item.suggested_skill_name)}" data-task-type="${escAttr(item.task_type)}" data-default-label="${t("btn_create_and_optimize")}">${t("btn_create_and_optimize")}</button>
+          <button class="trigger-btn new-skill trigger-new-btn ${doneClass}" data-skill="${escAttr(item.suggested_skill_name)}" data-task-type="${escAttr(item.task_type)}" data-default-label="${t("btn_create_and_optimize")}" ${disabled}>${label}</button>
         `;
         nodes.newSkillRecommendations.appendChild(card);
       }
@@ -666,8 +699,10 @@ HTML_PAGE = """<!doctype html>
       nodes.optimizeLog.textContent = `${line}\n${nodes.optimizeLog.textContent || ""}`.trim();
     }
 
-    async function refreshDashboard() {
-      nodes.hint.textContent = "";
+    async function refreshDashboard(options = {}) {
+      if (!options.keepHint) {
+        setHint("", "");
+      }
       const params = new URLSearchParams();
       if (nodes.startDate.value) params.set("start", nodes.startDate.value);
       if (nodes.endDate.value) params.set("end", nodes.endDate.value);
@@ -689,7 +724,7 @@ HTML_PAGE = """<!doctype html>
           `${t("label_rows")}=${report.row_count} | ${t("label_data_file")}=${report.data_file} | ${t("label_generated_at")}=${report.generated_at}`;
         lastReport = report;
       } catch (err) {
-        nodes.hint.textContent = `${t("msg_load_failed")}: ${err.message}`;
+        setHint("warn", `${t("msg_load_failed")}: ${err.message}`);
       }
     }
 
@@ -701,7 +736,7 @@ HTML_PAGE = """<!doctype html>
         renderOptions(options);
         await refreshDashboard();
       } catch (err) {
-        nodes.hint.textContent = `${t("msg_init_failed")}: ${err.message}`;
+        setHint("warn", `${t("msg_init_failed")}: ${err.message}`);
       }
     }
 
@@ -727,24 +762,31 @@ HTML_PAGE = """<!doctype html>
           `${t("label_rows")}=${lastReport.row_count} | ${t("label_data_file")}=${lastReport.data_file} | ${t("label_generated_at")}=${lastReport.generated_at}`;
       }
     });
-    async function runOptimizationFromButton(btn, payload, doneLabel) {
+    async function runOptimizationFromButton(btn, payload, doneLabel, successMessage, onSuccess) {
       btn.disabled = true;
       const old = btn.getAttribute("data-default-label") || "";
       btn.textContent = t("btn_running");
+      let succeeded = false;
       try {
         const data = await postOptimize(payload);
         appendOptimizeLog(data, payload.skill || "");
+        if (typeof onSuccess === "function") {
+          onSuccess(data);
+        }
         btn.textContent = doneLabel;
-        nodes.hint.textContent = t("msg_opt_done");
-        await refreshDashboard();
+        btn.classList.add("is-done");
+        setHint("ok", successMessage);
+        await refreshDashboard({ keepHint: true });
+        succeeded = true;
       } catch (err) {
-        nodes.hint.textContent = `${t("msg_opt_failed")}: ${err.message}`;
+        setHint("warn", `${t("msg_opt_failed")}: ${err.message}`);
         btn.textContent = old;
+        btn.classList.remove("is-done");
       } finally {
-        setTimeout(() => {
-          btn.disabled = false;
+        btn.disabled = succeeded;
+        if (!succeeded) {
           btn.textContent = old;
-        }, 1200);
+        }
       }
     }
 
@@ -771,6 +813,10 @@ HTML_PAGE = """<!doctype html>
           score: (opp && opp.score !== undefined) ? String(opp.score) : "",
         },
         t("btn_optimize_done"),
+        `${t("msg_opt_done")}: ${skill}`,
+        () => {
+          optimizedExistingSkills.add(skill);
+        },
       );
     });
     nodes.newSkillRecommendations.addEventListener("click", async (event) => {
@@ -798,6 +844,10 @@ HTML_PAGE = """<!doctype html>
           score: (rec && rec.score !== undefined) ? String(rec.score) : "",
         },
         t("btn_create_done"),
+        `${t("msg_create_done")}: ${skill}`,
+        () => {
+          optimizedNewSkills.add(newSkillKey(skill, taskType));
+        },
       );
     });
     boot();
