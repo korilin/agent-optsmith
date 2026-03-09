@@ -264,6 +264,56 @@ HTML_PAGE = """<!doctype html>
       white-space: pre-wrap;
       word-break: break-word;
     }
+    .weekly-wrap {
+      margin-top: 10px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .weekly-card {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px;
+      background: #fff;
+    }
+    .weekly-title {
+      font-size: 13px;
+      font-weight: 700;
+      margin: 0 0 8px;
+      color: #223747;
+    }
+    .weekly-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .weekly-kpi {
+      border: 1px solid #e2ddd4;
+      border-radius: 8px;
+      padding: 8px;
+      background: #fcfbf8;
+    }
+    .weekly-kpi .k {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .weekly-kpi .v {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1f3140;
+      word-break: break-word;
+    }
+    .weekly-list {
+      margin: 0;
+      padding-left: 16px;
+      color: #355063;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .weekly-list li + li {
+      margin-top: 4px;
+    }
     details {
       border: 1px solid var(--line);
       border-radius: 10px;
@@ -291,6 +341,7 @@ HTML_PAGE = """<!doctype html>
       .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .op-wrap { grid-template-columns: 1fr; }
       .rec-wrap { grid-template-columns: 1fr; }
+      .weekly-wrap { grid-template-columns: 1fr; }
     }
     @media (max-width: 640px) {
       .grid { grid-template-columns: 1fr; }
@@ -346,6 +397,8 @@ HTML_PAGE = """<!doctype html>
       <div class="op-wrap" id="opportunities"></div>
       <h3 style="margin: 12px 0 8px; font-size: 16px;" data-i18n="title_new_skill_recommendations">New Skill Recommendations</h3>
       <div class="rec-wrap" id="newSkillRecommendations"></div>
+      <h3 style="margin: 12px 0 8px; font-size: 16px;" data-i18n="title_weekly_summary">Weekly Insight Summary</h3>
+      <div class="weekly-wrap" id="weeklySummary"></div>
       <details>
         <summary data-i18n="summary_opt_log">Optimization Trigger Log</summary>
         <pre id="optimizeLog"></pre>
@@ -381,6 +434,7 @@ HTML_PAGE = """<!doctype html>
         meta_loading: "Loading...",
         title_skill_opt_discovery: "Skill Optimization Discovery",
         title_new_skill_recommendations: "New Skill Recommendations",
+        title_weekly_summary: "Weekly Insight Summary",
         summary_opt_log: "Optimization Trigger Log",
         summary_raw_overall: "Raw Overall Output",
         summary_raw_skill: "Raw Skill Output",
@@ -416,6 +470,20 @@ HTML_PAGE = """<!doctype html>
         msg_opt_failed: "Optimize failed",
         msg_opt_done: "Optimization completed",
         msg_create_done: "Skill created and optimization completed",
+        weekly_scope: "Scope",
+        weekly_kpi: "KPI Snapshot",
+        weekly_top_root_causes: "Top Root Causes",
+        weekly_top_task_types: "Top High-Cost Task Types",
+        weekly_skill_actions: "Skill Actions",
+        weekly_agents_actions: "AGENTS Actions",
+        weekly_next_goals: "Next Week Goals",
+        weekly_period_start: "period_start",
+        weekly_period_end: "period_end",
+        weekly_total_incidents: "total_incidents",
+        weekly_resolved_incidents: "resolved_incidents",
+        weekly_open_incidents: "open_incidents",
+        weekly_avg_token_cost_estimate: "avg_token_cost_estimate",
+        weekly_empty_report: "Weekly report is empty for selected range.",
         log_skill: "skill",
         log_target: "target",
         log_action: "action",
@@ -439,6 +507,7 @@ HTML_PAGE = """<!doctype html>
         meta_loading: "加载中...",
         title_skill_opt_discovery: "现有 Skill 优化发现",
         title_new_skill_recommendations: "新增 Skill 推荐",
+        title_weekly_summary: "周报摘要",
         summary_opt_log: "优化触发日志",
         summary_raw_overall: "总体原始输出",
         summary_raw_skill: "单 Skill 原始输出",
@@ -474,6 +543,20 @@ HTML_PAGE = """<!doctype html>
         msg_opt_failed: "优化触发失败",
         msg_opt_done: "优化已完成",
         msg_create_done: "Skill 已创建并完成优化",
+        weekly_scope: "统计区间",
+        weekly_kpi: "KPI 快照",
+        weekly_top_root_causes: "高频根因",
+        weekly_top_task_types: "高成本任务类型",
+        weekly_skill_actions: "Skill 动作",
+        weekly_agents_actions: "AGENTS 动作",
+        weekly_next_goals: "下周目标",
+        weekly_period_start: "开始日期",
+        weekly_period_end: "结束日期",
+        weekly_total_incidents: "事件总数",
+        weekly_resolved_incidents: "已解决事件",
+        weekly_open_incidents: "未解决事件",
+        weekly_avg_token_cost_estimate: "平均 token 成本估算",
+        weekly_empty_report: "当前筛选区间没有周报摘要数据。",
         log_skill: "skill",
         log_target: "目标",
         log_action: "动作",
@@ -490,10 +573,101 @@ HTML_PAGE = """<!doctype html>
     let lastReport = null;
     const optimizedExistingSkills = new Set();
     const optimizedNewSkills = new Set();
+    const METRIC_LABELS = {
+      en: {
+        tasks: "tasks",
+        active_days: "active_days",
+        tasks_per_day: "tasks_per_day",
+        avg_tokens: "avg_tokens",
+        avg_duration_sec: "avg_duration_sec",
+        success_rate: "success_rate",
+        rework_rate: "rework_rate",
+        overlap_task_types: "overlap_task_types",
+        sample_size_skill: "sample_size_skill",
+        sample_size_baseline: "sample_size_baseline",
+        skill_avg_tokens: "skill_avg_tokens",
+        baseline_avg_tokens: "baseline_avg_tokens",
+        token_reduction_pct: "token_reduction_pct",
+        skill_avg_duration_sec: "skill_avg_duration_sec",
+        baseline_avg_duration_sec: "baseline_avg_duration_sec",
+        duration_reduction_pct: "duration_reduction_pct",
+        success_rate_delta_pp: "success_rate_delta_pp",
+        rework_rate_delta: "rework_rate_delta",
+        pre_tasks: "pre_tasks",
+        pre_tasks_per_day: "pre_tasks_per_day",
+        pre_avg_tokens: "pre_avg_tokens",
+        pre_avg_duration_sec: "pre_avg_duration_sec",
+        pre_success_rate: "pre_success_rate",
+        pre_rework_rate: "pre_rework_rate",
+        post_tasks: "post_tasks",
+        post_tasks_per_day: "post_tasks_per_day",
+        post_avg_tokens: "post_avg_tokens",
+        post_avg_duration_sec: "post_avg_duration_sec",
+        post_success_rate: "post_success_rate",
+        post_rework_rate: "post_rework_rate",
+        delta_avg_tokens_pct: "delta_avg_tokens_pct",
+        delta_avg_duration_pct: "delta_avg_duration_pct",
+        delta_success_rate_pp: "delta_success_rate_pp",
+        delta_tasks_per_day_pct: "delta_tasks_per_day_pct",
+        status: "status",
+      },
+      zh: {
+        tasks: "任务数",
+        active_days: "活跃天数",
+        tasks_per_day: "日均任务",
+        avg_tokens: "平均 token",
+        avg_duration_sec: "平均耗时(秒)",
+        success_rate: "成功率",
+        rework_rate: "返工率",
+        overlap_task_types: "重叠任务类型数",
+        sample_size_skill: "skill 样本数",
+        sample_size_baseline: "baseline 样本数",
+        skill_avg_tokens: "skill 平均 token",
+        baseline_avg_tokens: "baseline 平均 token",
+        token_reduction_pct: "token 降幅",
+        skill_avg_duration_sec: "skill 平均耗时(秒)",
+        baseline_avg_duration_sec: "baseline 平均耗时(秒)",
+        duration_reduction_pct: "耗时降幅",
+        success_rate_delta_pp: "成功率变化(pp)",
+        rework_rate_delta: "返工率变化",
+        pre_tasks: "切换前任务数",
+        pre_tasks_per_day: "切换前日均任务",
+        pre_avg_tokens: "切换前平均 token",
+        pre_avg_duration_sec: "切换前平均耗时(秒)",
+        pre_success_rate: "切换前成功率",
+        pre_rework_rate: "切换前返工率",
+        post_tasks: "切换后任务数",
+        post_tasks_per_day: "切换后日均任务",
+        post_avg_tokens: "切换后平均 token",
+        post_avg_duration_sec: "切换后平均耗时(秒)",
+        post_success_rate: "切换后成功率",
+        post_rework_rate: "切换后返工率",
+        delta_avg_tokens_pct: "平均 token 变化",
+        delta_avg_duration_pct: "平均耗时变化",
+        delta_success_rate_pp: "成功率变化(pp)",
+        delta_tasks_per_day_pct: "日均任务变化",
+        status: "状态",
+      },
+    };
 
     function t(key) {
       const dict = I18N[currentLang] || I18N.en;
       return dict[key] || I18N.en[key] || key;
+    }
+
+    function metricLabel(key) {
+      const labels = METRIC_LABELS[currentLang] || METRIC_LABELS.en;
+      return labels[key] || METRIC_LABELS.en[key] || key;
+    }
+
+    function sectionTitleLabel(title) {
+      if (!title) return "";
+      if (currentLang !== "zh") return title;
+      if (title === "Overall Metrics") return "总体指标";
+      if (title === "Skill Comparison (vs no-skill baseline by task_type)") return "Skill 对比（同 task_type 无 skill baseline）";
+      if (title.startsWith("Pre/Post Metrics")) return title.replace("Pre/Post Metrics", "切换前后指标");
+      if (title.startsWith("Skill: ")) return title.replace("Skill: ", "技能：");
+      return title;
     }
 
     function applyLanguage() {
@@ -519,6 +693,7 @@ HTML_PAGE = """<!doctype html>
       sections: document.getElementById("sections"),
       opportunities: document.getElementById("opportunities"),
       newSkillRecommendations: document.getElementById("newSkillRecommendations"),
+      weeklySummary: document.getElementById("weeklySummary"),
       optimizeLog: document.getElementById("optimizeLog"),
       overallRaw: document.getElementById("overallRaw"),
       skillRaw: document.getElementById("skillRaw"),
@@ -586,7 +761,7 @@ HTML_PAGE = """<!doctype html>
       for (const [key, value] of entries) {
         const el = document.createElement("div");
         el.className = "card";
-        el.innerHTML = `<div class="k">${key}</div><div class="v">${value}</div>`;
+        el.innerHTML = `<div class="k">${metricLabel(key)}</div><div class="v">${value}</div>`;
         nodes.cards.appendChild(el);
       }
     }
@@ -595,9 +770,150 @@ HTML_PAGE = """<!doctype html>
       nodes.sections.innerHTML = "";
       for (const sec of sections || []) {
         const li = document.createElement("li");
-        li.textContent = `${sec.title} (${Object.keys(sec.metrics || {}).length} ${t("label_metrics_count")})`;
+        li.textContent = `${sectionTitleLabel(sec.title || "")} (${Object.keys(sec.metrics || {}).length} ${t("label_metrics_count")})`;
         nodes.sections.appendChild(li);
       }
+    }
+
+    function escHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function parseWeeklyRaw(raw) {
+      const lines = String(raw || "").split(/\\r?\\n/);
+      const result = {
+        scope: {},
+        kpi: {},
+        topRootCauses: [],
+        topTaskTypes: [],
+        skillActions: [],
+        agentsActions: [],
+        nextGoals: [],
+      };
+
+      let section = "";
+      for (const lineRaw of lines) {
+        const line = lineRaw.trim();
+        if (!line) continue;
+        if (line.startsWith("## ")) {
+          section = line.slice(3).trim();
+          continue;
+        }
+
+        if (section === "Scope" && line.startsWith("- ")) {
+          const payload = line.slice(2);
+          const idx = payload.indexOf(":");
+          if (idx > 0) {
+            const key = payload.slice(0, idx).trim();
+            const value = payload.slice(idx + 1).trim();
+            result.scope[key] = value;
+          }
+          continue;
+        }
+
+        if (section === "KPI Snapshot" && line.startsWith("- ")) {
+          const payload = line.slice(2);
+          const idx = payload.indexOf(":");
+          if (idx > 0) {
+            const key = payload.slice(0, idx).trim();
+            const value = payload.slice(idx + 1).trim();
+            result.kpi[key] = value;
+          }
+          continue;
+        }
+
+        if (section === "Top Root Causes" && line.startsWith("- ")) {
+          result.topRootCauses.push(line.slice(2).trim());
+          continue;
+        }
+
+        if (section === "Top High-Cost Task Types" && line.startsWith("- ")) {
+          result.topTaskTypes.push(line.slice(2).trim());
+          continue;
+        }
+
+        if (section === "Skill Actions" && line.startsWith("- ")) {
+          result.skillActions.push(line.slice(2).trim());
+          continue;
+        }
+
+        if (section === "AGENTS Actions" && line.startsWith("- ")) {
+          result.agentsActions.push(line.slice(2).trim());
+          continue;
+        }
+
+        if (section === "Next Week Goals" && /^[0-9]+\\./.test(line)) {
+          result.nextGoals.push(line.replace(/^[0-9]+\\.\\s*/, "").trim());
+        }
+      }
+      return result;
+    }
+
+    function renderWeeklyList(items) {
+      const rows = (items || []).filter((x) => x && String(x).trim().length > 0);
+      if (rows.length === 0) {
+        return `<ul class="weekly-list"><li>${t("label_none")}</li></ul>`;
+      }
+      return `<ul class="weekly-list">${rows.map((item) => `<li>${escHtml(item)}</li>`).join("")}</ul>`;
+    }
+
+    function renderWeeklySummary(raw) {
+      const parsed = parseWeeklyRaw(raw);
+      const hasContent = Object.keys(parsed.scope).length > 0 ||
+        Object.keys(parsed.kpi).length > 0 ||
+        parsed.topRootCauses.length > 0 ||
+        parsed.topTaskTypes.length > 0 ||
+        parsed.skillActions.length > 0 ||
+        parsed.agentsActions.length > 0 ||
+        parsed.nextGoals.length > 0;
+
+      if (!hasContent) {
+        nodes.weeklySummary.innerHTML = `<div class="weekly-card"><p class="weekly-title">${t("weekly_empty_report")}</p></div>`;
+        return;
+      }
+
+      const scopeRows = [
+        `${t("weekly_period_start")}: ${escHtml(parsed.scope.period_start || "-")}`,
+        `${t("weekly_period_end")}: ${escHtml(parsed.scope.period_end || "-")}`,
+      ];
+
+      const kpiKeys = [
+        "total_incidents",
+        "resolved_incidents",
+        "open_incidents",
+        "avg_token_cost_estimate",
+      ];
+      const kpiHtml = kpiKeys.map((key) => {
+        const value = parsed.kpi[key] || "-";
+        return `<div class="weekly-kpi"><div class="k">${t(`weekly_${key}`)}</div><div class="v">${escHtml(value)}</div></div>`;
+      }).join("");
+
+      nodes.weeklySummary.innerHTML = `
+        <div class="weekly-card">
+          <p class="weekly-title">${t("weekly_scope")}</p>
+          ${renderWeeklyList(scopeRows)}
+          <p class="weekly-title" style="margin-top:10px;">${t("weekly_kpi")}</p>
+          <div class="weekly-kpi-grid">${kpiHtml}</div>
+        </div>
+        <div class="weekly-card">
+          <p class="weekly-title">${t("weekly_top_root_causes")}</p>
+          ${renderWeeklyList(parsed.topRootCauses)}
+          <p class="weekly-title" style="margin-top:10px;">${t("weekly_top_task_types")}</p>
+          ${renderWeeklyList(parsed.topTaskTypes)}
+        </div>
+        <div class="weekly-card">
+          <p class="weekly-title">${t("weekly_skill_actions")}</p>
+          ${renderWeeklyList(parsed.skillActions)}
+          <p class="weekly-title" style="margin-top:10px;">${t("weekly_agents_actions")}</p>
+          ${renderWeeklyList(parsed.agentsActions)}
+          <p class="weekly-title" style="margin-top:10px;">${t("weekly_next_goals")}</p>
+          ${renderWeeklyList(parsed.nextGoals)}
+        </div>
+      `;
     }
 
     function statusLabel(raw) {
@@ -731,6 +1047,7 @@ HTML_PAGE = """<!doctype html>
         renderSections(report.sections || []);
         renderOpportunities(report.opportunities || []);
         renderNewSkillRecommendations(report.new_skill_recommendations || []);
+        renderWeeklySummary(report.weekly_raw || "");
         nodes.overallRaw.textContent = report.overall_raw || "";
         nodes.skillRaw.textContent = report.skill_raw || t("msg_no_skill_query");
         nodes.weeklyRaw.textContent = report.weekly_raw || t("msg_empty");
@@ -770,6 +1087,7 @@ HTML_PAGE = """<!doctype html>
         renderSections(lastReport.sections || []);
         renderOpportunities(lastReport.opportunities || []);
         renderNewSkillRecommendations(lastReport.new_skill_recommendations || []);
+        renderWeeklySummary(lastReport.weekly_raw || "");
         nodes.skillRaw.textContent = lastReport.skill_raw || t("msg_no_skill_query");
         nodes.weeklyRaw.textContent = lastReport.weekly_raw || t("msg_empty");
         nodes.metaText.textContent =

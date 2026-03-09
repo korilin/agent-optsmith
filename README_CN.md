@@ -139,6 +139,20 @@ aoso-skill update
 
 ## 5. 如何正确解读输出
 
+本工具的对比口径如下：
+
+1. 单个 skill 只和同 `task_type` 的 no-skill baseline 对比。
+2. skill 级效果：
+- `token_reduction_pct = (baseline_avg_tokens - skill_avg_tokens) / baseline_avg_tokens`
+- `duration_reduction_pct = (baseline_avg_duration - skill_avg_duration) / baseline_avg_duration`
+- `success_rate_delta_pp = skill_success_rate - baseline_success_rate`
+- `rework_rate_delta = skill_rework_rate - baseline_rework_rate`
+3. cutover 前后效果：
+- `delta_avg_tokens_pct = (post_avg_tokens - pre_avg_tokens) / pre_avg_tokens`
+- `delta_avg_duration_pct = (post_avg_duration - pre_avg_duration) / pre_avg_duration`
+- `delta_success_rate_pp = post_success_rate - pre_success_rate`
+- `delta_tasks_per_day_pct = (post_tasks_per_day - pre_tasks_per_day) / pre_tasks_per_day`
+
 避免误判时，按这 5 条看：
 
 1. 只有同 `task_type` 存在 no-skill baseline，skill 对比才可靠。

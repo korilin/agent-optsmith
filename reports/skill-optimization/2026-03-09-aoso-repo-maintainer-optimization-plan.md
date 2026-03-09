@@ -44,11 +44,11 @@
 
 ```text
 Overall Metrics
-  tasks: 7
+  tasks: 8
   active_days: 2
-  tasks_per_day: 3.50
-  avg_tokens: 261953.00
-  avg_duration_sec: 27.00
+  tasks_per_day: 4.00
+  avg_tokens: 446424.75
+  avg_duration_sec: 39.25
   success_rate: 100.00%
   rework_rate: 0.00
 
@@ -59,10 +59,10 @@ Pre/Post Metrics (cutover=2026-03-06)
   pre_avg_duration_sec: n/a
   pre_success_rate: n/a
   pre_rework_rate: n/a
-  post_tasks: 7
-  post_tasks_per_day: 3.50
-  post_avg_tokens: 261953.00
-  post_avg_duration_sec: 27.00
+  post_tasks: 8
+  post_tasks_per_day: 4.00
+  post_avg_tokens: 446424.75
+  post_avg_duration_sec: 39.25
   post_success_rate: 100.00%
   post_rework_rate: 0.00
 

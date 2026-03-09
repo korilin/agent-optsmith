@@ -139,6 +139,20 @@ How to read this flow:
 
 ## 5. How to Interpret Results Correctly
 
+Comparison method used by this toolkit:
+
+1. Compare each skill only against no-skill baseline rows on the same `task_type`.
+2. For skill-level effect:
+- `token_reduction_pct = (baseline_avg_tokens - skill_avg_tokens) / baseline_avg_tokens`
+- `duration_reduction_pct = (baseline_avg_duration - skill_avg_duration) / baseline_avg_duration`
+- `success_rate_delta_pp = skill_success_rate - baseline_success_rate`
+- `rework_rate_delta = skill_rework_rate - baseline_rework_rate`
+3. For cutover pre/post effect:
+- `delta_avg_tokens_pct = (post_avg_tokens - pre_avg_tokens) / pre_avg_tokens`
+- `delta_avg_duration_pct = (post_avg_duration - pre_avg_duration) / pre_avg_duration`
+- `delta_success_rate_pp = post_success_rate - pre_success_rate`
+- `delta_tasks_per_day_pct = (post_tasks_per_day - pre_tasks_per_day) / pre_tasks_per_day`
+
 Use these rules to avoid false conclusions:
 
 1. Trust skill comparison only when there is no-skill baseline on the same `task_type`.
