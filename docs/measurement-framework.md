@@ -73,7 +73,7 @@ Compare:
 
 ## Commands
 
-If this toolkit is used via submodule in another project, point to the project-local data file:
+If this toolkit is used in another project, point to the project-local data file:
 
 ```bash
 export AOSO_DATA_FILE=.agent-loop-data/metrics/task-runs.csv

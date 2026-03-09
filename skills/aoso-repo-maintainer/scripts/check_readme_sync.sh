@@ -49,9 +49,15 @@ for i in 1 2 3 4 5 6; do
   assert_contains "${readme_cn}" "^## ${i}\\." "README_CN.md missing section heading: ## ${i}."
 done
 
-assert_contains "${readme_en}" "--path skills/agent-self-optimizing-loop" "README.md missing install command for agent-self-optimizing-loop"
-assert_contains "${readme_cn}" "--path skills/agent-self-optimizing-loop" "README_CN.md missing install command for agent-self-optimizing-loop"
-assert_contains "${readme_en}" "--path skills/aoso-repo-maintainer" "README.md missing install command for aoso-repo-maintainer"
-assert_contains "${readme_cn}" "--path skills/aoso-repo-maintainer" "README_CN.md missing install command for aoso-repo-maintainer"
+assert_contains "${readme_en}" "brew install aoso-skill" "README.md missing brew install command"
+assert_contains "${readme_cn}" "brew install aoso-skill" "README_CN.md missing brew install command"
+assert_contains "${readme_en}" "pipx install" "README.md missing pipx install command"
+assert_contains "${readme_cn}" "pipx install" "README_CN.md missing pipx install command"
+assert_contains "${readme_en}" "aoso-skill update" "README.md missing aoso-skill update command"
+assert_contains "${readme_cn}" "aoso-skill update" "README_CN.md missing aoso-skill update command"
+assert_contains "${readme_en}" "aoso-skill init" "README.md missing aoso-skill init command"
+assert_contains "${readme_cn}" "aoso-skill init" "README_CN.md missing aoso-skill init command"
+assert_contains "${readme_en}" "aoso-skill dashboard" "README.md missing aoso-skill dashboard command"
+assert_contains "${readme_cn}" "aoso-skill dashboard" "README_CN.md missing aoso-skill dashboard command"
 
 echo "README sync check passed (version: ${version_en})"

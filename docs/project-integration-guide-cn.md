@@ -1,42 +1,44 @@
-# 跨工程接入说明书
+# 跨工程接入说明书（CLI 无 Submodule 版）
 
 ## 目标
 
-将本项目的“自优化闭环”能力接入任意工程，并做到：
+将本项目“自优化闭环”能力接入任意工程，并做到：
 
 - 流程可复用：任务记录、失败复盘、周报、技能迭代
 - 效果可量化：token、时长、成功率、返工率
-- 接入成本低：尽量不改业务代码
+- 接入成本低：业务仓库不需要引入 submodule
 
-## 接入模式
+## 接入方式（唯一推荐）
 
-1. 仅安装 Skill（推荐默认）
-- 适用：只想快速获得自优化能力，不想引入 submodule。
-- 特点：所有能力通过已安装 skill 的脚本完成，数据写入项目本地 `.agent-loop-data/`。
+通过 `aoso-skill` CLI 安装与操作，业务仓库只保留本地数据目录 `.agent-loop-data/`。
 
-2. Submodule 引入整仓
-- 适用：希望在项目中共用完整模板仓（文档、模板、脚本）。
-- 特点：版本管理更清晰，但接入稍重。
+## 1) 安装 `aoso-skill` CLI
 
-## 方案 A：仅安装 Skill（推荐）
-
-### 1) 安装 skill
+### Homebrew
 
 ```bash
-python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py \
-  --repo korilin/agent-auto-self-optimizing-closed-loop \
-  --path skills/agent-self-optimizing-loop
+brew tap korilin/aoso-skill https://github.com/korilin/agent-auto-self-optimizing-closed-loop
+brew install aoso-skill
 ```
 
-安装后重启 Codex。
+### pipx
 
-### 2) 在目标工程初始化数据目录
+```bash
+pipx install "git+https://github.com/korilin/agent-auto-self-optimizing-closed-loop.git"
+```
+
+## 2) 安装或更新运行时 skill
+
+```bash
+aoso-skill update
+```
+
+## 3) 在目标工程初始化
 
 在目标工程根目录执行：
 
 ```bash
-SKILL_HOME="${CODEX_HOME:-$HOME/.codex}/skills/agent-self-optimizing-loop"
-"${SKILL_HOME}/scripts/setup_loop_workspace.sh" --workspace "$(pwd)"
+aoso-skill init --workspace "$(pwd)"
 ```
 
 这会创建：
@@ -44,17 +46,22 @@ SKILL_HOME="${CODEX_HOME:-$HOME/.codex}/skills/agent-self-optimizing-loop"
 - `.agent-loop-data/metrics/task-runs.csv`
 - `.agent-loop-data/knowledge-base/errors/`
 - `.agent-loop-data/reports/`
-- `.agent-loop-data/skills/`
 - `.agent-loop-data/templates/error-entry.md`
 
-### 3) 日常运行命令（自动模式）
+同时会更新（或创建）项目根目录 `AGENTS.md` 里的 `AOSO-SKILL` 托管区块。
 
-建议在你的 agent 结束任务时自动触发以下命令，而不是让用户手动执行。
+## 4) 日常命令
+
+启动看板：
+
+```bash
+aoso-skill dashboard --workspace "$(pwd)" --host 127.0.0.1 --port 8765
+```
+
+任务完成自动记录建议使用运行时脚本（由 agent 自动执行）：
 
 ```bash
 SKILL_HOME="${CODEX_HOME:-$HOME/.codex}/skills/agent-self-optimizing-loop"
-
-# 自动执行：记录 + 指标分析 + 周报
 "${SKILL_HOME}/scripts/auto_run_loop.sh" \
   --task-id TASK-1001 \
   --task-type debug \
@@ -65,67 +72,28 @@ SKILL_HOME="${CODEX_HOME:-$HOME/.codex}/skills/agent-self-optimizing-loop"
   --total-tokens 1820 \
   --duration-sec 420 \
   --success true
-
-# 打开本地看板（日期/skill/cutover/指标筛选 + 优化发现）
-"${SKILL_HOME}/scripts/dashboard_server.sh" --host 127.0.0.1 --port 8765
-
-# 可选：CLI 原始输出
-"${SKILL_HOME}/scripts/metrics_report.sh" --all
-"${SKILL_HOME}/scripts/metrics_report.sh" --skill log-analysis-helper
-"${SKILL_HOME}/scripts/metrics_report.sh" --all --cutover 2026-03-01
-"${SKILL_HOME}/scripts/optimize_skill.sh" --skill log-analysis-helper
 ```
 
-补充：如果没有显式传入 `--total-tokens/--duration-sec`，`auto_run_loop.sh` 会优先从本地
-Codex session 日志自动回填（`$CODEX_HOME/sessions` 与 `$CODEX_HOME/archived_sessions`，
-有 `CODEX_THREAD_ID` 时按线程匹配）。非 Codex 场景建议继续显式传参。
-
-## 方案 B：Submodule 引入整仓
-
-在目标工程根目录执行：
-
-```bash
-git submodule add git@github.com:korilin/agent-auto-self-optimizing-closed-loop.git .agent-loop
-git submodule update --init --recursive
-
-mkdir -p .agent-loop-data/metrics .agent-loop-data/knowledge-base/errors .agent-loop-data/reports .agent-loop-data/skills
-```
-
-命令示例：
-
-```bash
-# 自动执行：记录 + 指标分析 + 周报
-./.agent-loop/scripts/auto_run_loop.sh --task-id TASK-1001 --task-type debug --project my-service --model gpt-5 --used-skill true --skill-name log-analysis-helper --total-tokens 1820 --duration-sec 420 --success true
-
-# 启动看板
-./.agent-loop/scripts/dashboard_server.sh --host 127.0.0.1 --port 8765
-```
-
-说明：
-- 从宿主仓库根目录调用 `./.agent-loop/scripts/*` 时，会自动使用宿主仓库下的 `./.agent-loop-data/` 作为默认数据目录。
+补充：如果未显式传 `--total-tokens/--duration-sec`，`auto_run_loop.sh` 会从本地 Codex session 日志自动回填（`$CODEX_HOME/sessions` 与 `$CODEX_HOME/archived_sessions`，有 `CODEX_THREAD_ID` 时按线程匹配）。
 
 ## 在目标工程如何真正生效
 
-1. 在工程 `AGENTS.md` 加约定：命中 `.agent-loop-data/skills/<skill>/SKILL.md` 时先用对应 skill。
-2. 每个任务结束执行 `auto_run_loop.sh`，由脚本自动采集和分析。
+1. `AGENTS.md` 中声明：任务执行需使用 `agent-self-optimizing-loop`。
+2. 每个任务结束自动执行 `auto_run_loop.sh`。
 3. 每个失败事件写一条 error entry（脚本自动分析会读取这些条目）。
-4. 用 dashboard 做日期/skill/指标筛选，查看 `Skill Optimization Discovery`（可立即优化现有 skill）和 `New Skill Recommendations`（可一键创建并优化新增 skill）。
+4. 用 dashboard 做日期/skill/指标筛选，并触发优化与新增 skill。
 5. 把确认有效的规则与优化结果回写到 `AGENTS.md` 或 skill。
 
 ## 如何评估是否有效
 
 ### 单个 skill 的降本效果
 
-查看：
-
 - `token_reduction_pct`
 - `duration_reduction_pct`
 - `success_rate_delta_pp`
 - `rework_rate_delta`
 
-### 工程整体效率提升
-
-查看 pre/post：
+### 工程整体效率提升（pre/post）
 
 - `delta_avg_tokens_pct`（越低越好）
 - `delta_avg_duration_pct`（越低越好）

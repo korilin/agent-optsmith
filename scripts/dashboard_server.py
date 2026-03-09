@@ -488,8 +488,34 @@ HTML_PAGE = """<!doctype html>
     let currentLang = localStorage.getItem("aoso_dashboard_lang") || "en";
     if (!I18N[currentLang]) currentLang = "en";
     let lastReport = null;
-    const optimizedExistingSkills = new Set();
-    const optimizedNewSkills = new Set();
+    const OPT_STATE_KEY = "aoso_dashboard_opt_state_v1";
+
+    function loadOptimizationState() {
+      try {
+        const raw = localStorage.getItem(OPT_STATE_KEY);
+        if (!raw) {
+          return { existing: [], newlyCreated: [] };
+        }
+        const parsed = JSON.parse(raw);
+        const existing = Array.isArray(parsed.existing) ? parsed.existing : [];
+        const newlyCreated = Array.isArray(parsed.newlyCreated) ? parsed.newlyCreated : [];
+        return { existing, newlyCreated };
+      } catch (_) {
+        return { existing: [], newlyCreated: [] };
+      }
+    }
+
+    function saveOptimizationState() {
+      const payload = {
+        existing: Array.from(optimizedExistingSkills.values()),
+        newlyCreated: Array.from(optimizedNewSkills.values()),
+      };
+      localStorage.setItem(OPT_STATE_KEY, JSON.stringify(payload));
+    }
+
+    const initialOptState = loadOptimizationState();
+    const optimizedExistingSkills = new Set(initialOptState.existing);
+    const optimizedNewSkills = new Set(initialOptState.newlyCreated);
 
     function t(key) {
       const dict = I18N[currentLang] || I18N.en;
@@ -816,6 +842,7 @@ HTML_PAGE = """<!doctype html>
         `${t("msg_opt_done")}: ${skill}`,
         () => {
           optimizedExistingSkills.add(skill);
+          saveOptimizationState();
         },
       );
     });
@@ -847,6 +874,7 @@ HTML_PAGE = """<!doctype html>
         `${t("msg_create_done")}: ${skill}`,
         () => {
           optimizedNewSkills.add(newSkillKey(skill, taskType));
+          saveOptimizationState();
         },
       );
     });

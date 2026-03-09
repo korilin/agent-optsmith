@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aoso-skill"
+version = "0.1.0"
+description = "CLI for initializing and operating the agent-self-optimizing-loop skill in projects."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.9"
+authors = [
+  { name = "AOSO Maintainers" }
+]
+keywords = ["codex", "skill", "self-optimization", "dashboard"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Environment :: Console",
+]
+
+[project.scripts]
+aoso-skill = "aoso_skill_cli.cli:main"
+
+[tool.setuptools]
+packages = ["aoso_skill_cli"]

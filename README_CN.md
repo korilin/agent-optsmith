@@ -31,33 +31,32 @@
 - `reports/`
 - `templates/error-entry.md`
 
-## 2. 安装 skill
+## 2. 安装 `aoso-skill` CLI（无 Submodule）
 
-先安装跨工程可复用的主 skill（用户日常使用这个）：
-
-```bash
-python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py \
-  --repo korilin/agent-auto-self-optimizing-closed-loop \
-  --path skills/agent-self-optimizing-loop
-```
-
-仅当你要维护本仓库时，再安装维护者 skill：
+可选 Homebrew 或 pipx：
 
 ```bash
-python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py \
-  --repo korilin/agent-auto-self-optimizing-closed-loop \
-  --path skills/aoso-repo-maintainer
+brew tap korilin/aoso-skill https://github.com/korilin/agent-auto-self-optimizing-closed-loop
+brew install aoso-skill
 ```
 
-安装后重启 Codex。
+```bash
+pipx install "git+https://github.com/korilin/agent-auto-self-optimizing-closed-loop.git"
+```
+
+然后执行运行时 skill 安装/升级：
+
+```bash
+aoso-skill update
+aoso-skill help
+```
 
 ## 3. 在你的项目里做一次初始化
 
 在目标项目根目录运行：
 
 ```bash
-SKILL_HOME="${CODEX_HOME:-$HOME/.codex}/skills/agent-self-optimizing-loop"
-"${SKILL_HOME}/scripts/setup_loop_workspace.sh" --workspace "$(pwd)"
+aoso-skill init --workspace "$(pwd)"
 ```
 
 预期结果：
@@ -66,6 +65,7 @@ SKILL_HOME="${CODEX_HOME:-$HOME/.codex}/skills/agent-self-optimizing-loop"
 - 自动创建 `.agent-loop-data/knowledge-base/errors/`。
 - 自动创建 `.agent-loop-data/reports/`。
 - 自动创建 `.agent-loop-data/templates/error-entry.md`。
+- 自动更新或创建 `AGENTS.md` 中的 `AOSO-SKILL` 托管区块。
 
 ## 4. 日常使用路径（全自动）
 
@@ -94,16 +94,12 @@ SKILL_HOME="${CODEX_HOME:-$HOME/.codex}/skills/agent-self-optimizing-loop"
 2. 打开看板做筛选、优化发现和直接执行：
 
 ```bash
-SKILL_HOME="${CODEX_HOME:-$HOME/.codex}/skills/agent-self-optimizing-loop"
-"${SKILL_HOME}/scripts/dashboard_server.sh" --host 127.0.0.1 --port 8765
+aoso-skill dashboard --workspace "$(pwd)" --host 127.0.0.1 --port 8765
 ```
 
 然后访问 `http://127.0.0.1:8765`。
 在 `Skill Optimization Discovery` 区域可对现有 skill 立即执行优化。
 在 `New Skill Recommendations` 区域可一键创建并优化新增 skill。
-
-Submodule 模式说明：
-- 当你在项目根目录通过 `./.agent-loop/scripts/*` 调用脚本时，默认会自动写入项目本地 `./.agent-loop-data/`。
 
 3. 如需原始命令输出（可选）：
 
@@ -113,6 +109,54 @@ SKILL_HOME="${CODEX_HOME:-$HOME/.codex}/skills/agent-self-optimizing-loop"
 "${SKILL_HOME}/scripts/metrics_report.sh" --skill log-analysis-helper
 "${SKILL_HOME}/scripts/metrics_report.sh" --all --cutover YYYY-MM-DD
 ```
+
+4. 需要升级运行时 skill 时执行：
+
+```bash
+aoso-skill update
+```
+
+### 完整闭环流程图
+
+```mermaid
+flowchart TD
+  A["项目中开始任务"] --> B["优先复用已有 Skill / Baseline 流程"]
+  B --> C["任务交付"]
+  C --> D["auto_run_loop.sh（自动执行）"]
+  D --> E["记录任务指标<br/>task-runs.csv<br/>total_tokens,duration,success,rework"]
+  D --> F["生成报告<br/>metrics_report + weekly_review"]
+  D --> G["刷新 Dashboard 数据"]
+
+  E --> H["Dashboard 筛选<br/>日期、skill、task_type、指标、cutover"]
+  F --> H
+  G --> H
+
+  H --> I["优化机会发现<br/>现有 skill 优化项"]
+  H --> J["新增 Skill 推荐<br/>缺失能力补齐项"]
+
+  I --> K["立即触发优化"]
+  J --> L["立即创建并优化"]
+
+  K --> M["optimize_skill.sh + skill 文件更新"]
+  L --> M
+  M --> N["产出优化报告 + Skill 产物"]
+  N --> O["后续任务复用新版本 Skill"]
+  O --> P["观察 KPI 变化<br/>tokens,duration,success,rework,hit-rate"]
+
+  P --> Q{"效果是否验证通过？"}
+  Q -->|是| R["沉淀长期规则<br/>AGENTS.md + SKILL.md"]
+  Q -->|否| S["继续补 baseline 或调整优化方案"]
+  R --> B
+  S --> B
+```
+
+这张图的阅读顺序：
+
+1. 每个完成任务都会写入一条标准化运行记录。
+2. 报告和看板都基于同一份本地数据源（`.agent-loop-data/`）。
+3. 现有 skill 优化与新增 skill 推荐都可在看板里直接触发执行。
+4. 优化结果会立即应用，并被后续任务复用。
+5. 只有验证有收益的策略才应沉淀到长期治理规则（`AGENTS.md`）和稳定 skill 指令。
 
 ## 5. 如何正确解读输出
 

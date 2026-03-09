@@ -31,33 +31,32 @@ In your project, data is stored under `.agent-loop-data/`:
 - `reports/`
 - `templates/error-entry.md`
 
-## 2. Install the Skills
+## 2. Install `aoso-skill` CLI (No Submodule)
 
-Install the cross-project skill you will use day to day:
-
-```bash
-python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py \
-  --repo korilin/agent-auto-self-optimizing-closed-loop \
-  --path skills/agent-self-optimizing-loop
-```
-
-Install the project-local maintainer skill only if you maintain this repository:
+Use either Homebrew or pipx:
 
 ```bash
-python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py \
-  --repo korilin/agent-auto-self-optimizing-closed-loop \
-  --path skills/aoso-repo-maintainer
+brew tap korilin/aoso-skill https://github.com/korilin/agent-auto-self-optimizing-closed-loop
+brew install aoso-skill
 ```
 
-Restart Codex after installation.
+```bash
+pipx install "git+https://github.com/korilin/agent-auto-self-optimizing-closed-loop.git"
+```
+
+Then install or update runtime skill assets:
+
+```bash
+aoso-skill update
+aoso-skill help
+```
 
 ## 3. Initialize Your Project Once
 
 Run this in the target project root:
 
 ```bash
-SKILL_HOME="${CODEX_HOME:-$HOME/.codex}/skills/agent-self-optimizing-loop"
-"${SKILL_HOME}/scripts/setup_loop_workspace.sh" --workspace "$(pwd)"
+aoso-skill init --workspace "$(pwd)"
 ```
 
 Expected result:
@@ -66,6 +65,7 @@ Expected result:
 - `.agent-loop-data/knowledge-base/errors/` created.
 - `.agent-loop-data/reports/` created.
 - `.agent-loop-data/templates/error-entry.md` created.
+- `AGENTS.md` gets/refreshes a managed `AOSO-SKILL` block.
 
 ## 4. Daily Workflow (Fully Automated Path)
 
@@ -94,16 +94,12 @@ local Codex session logs (`$CODEX_HOME/sessions` and `$CODEX_HOME/archived_sessi
 2. Open dashboard for filtering, optimization discovery, and direct optimization:
 
 ```bash
-SKILL_HOME="${CODEX_HOME:-$HOME/.codex}/skills/agent-self-optimizing-loop"
-"${SKILL_HOME}/scripts/dashboard_server.sh" --host 127.0.0.1 --port 8765
+aoso-skill dashboard --workspace "$(pwd)" --host 127.0.0.1 --port 8765
 ```
 
 Then open `http://127.0.0.1:8765`.
 Use the `Skill Optimization Discovery` section to optimize one skill immediately.
 Use `New Skill Recommendations` to create-and-optimize a new skill immediately.
-
-Submodule mode note:
-- If you run scripts via `./.agent-loop/scripts/*` from your project root, defaults now target your project-local `./.agent-loop-data/` automatically.
 
 3. Optional direct report commands (if you need raw CLI output):
 
@@ -113,6 +109,54 @@ SKILL_HOME="${CODEX_HOME:-$HOME/.codex}/skills/agent-self-optimizing-loop"
 "${SKILL_HOME}/scripts/metrics_report.sh" --skill log-analysis-helper
 "${SKILL_HOME}/scripts/metrics_report.sh" --all --cutover YYYY-MM-DD
 ```
+
+4. Upgrade runtime skill when needed:
+
+```bash
+aoso-skill update
+```
+
+### Complete Closed-Loop Flow
+
+```mermaid
+flowchart TD
+  A["Task Starts in Project"] --> B["Use Existing Skill / Baseline Workflow"]
+  B --> C["Task Delivery"]
+  C --> D["auto_run_loop.sh (automatic)"]
+  D --> E["Record Run Metrics<br/>task-runs.csv<br/>total_tokens,duration,success,rework"]
+  D --> F["Generate Reports<br/>metrics_report + weekly_review"]
+  D --> G["Update Dashboard Data"]
+
+  E --> H["Dashboard Filtering<br/>date, skill, task_type, metric key, cutover"]
+  F --> H
+  G --> H
+
+  H --> I["Optimization Discovery<br/>existing skill opportunities"]
+  H --> J["New Skill Recommendations<br/>missing-skill opportunities"]
+
+  I --> K["Trigger Optimize (Now)"]
+  J --> L["Trigger Create + Optimize (Now)"]
+
+  K --> M["optimize_skill.sh + skill updates"]
+  L --> M
+  M --> N["Optimization Report + Skill Artifacts"]
+  N --> O["Next Tasks Reuse Updated Skill"]
+  O --> P["Observe KPI Delta<br/>tokens,duration,success,rework,hit-rate"]
+
+  P --> Q{"Improvement Verified?"}
+  Q -->|Yes| R["Promote Stable Rules<br/>AGENTS.md + SKILL.md"]
+  Q -->|No| S["Keep Baseline Sampling / Refine Plan"]
+  R --> B
+  S --> B
+```
+
+How to read this flow:
+
+1. Every completed task writes one standardized run record.
+2. Reports and dashboard always read from the same local data source (`.agent-loop-data/`).
+3. Optimization can be triggered directly from dashboard for both existing skills and new-skill recommendations.
+4. Optimized artifacts are applied immediately and reused by subsequent tasks.
+5. Only verified gains should be promoted into long-term governance (`AGENTS.md`) and stable skill instructions.
 
 ## 5. How to Interpret Results Correctly
 

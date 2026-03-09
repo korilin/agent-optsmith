@@ -31,6 +31,9 @@ for f in "${shell_runtime_scripts[@]}"; do
 done
 PYTHONPYCACHEPREFIX="${tmp_dir}/pycache" python3 -m py_compile "${repo_root}/scripts/dashboard_server.py"
 PYTHONPYCACHEPREFIX="${tmp_dir}/pycache" python3 -m py_compile "${repo_root}/skills/agent-self-optimizing-loop/scripts/dashboard_server.py"
+PYTHONPYCACHEPREFIX="${tmp_dir}/pycache" python3 -m py_compile "${repo_root}/aoso_skill_cli/__init__.py"
+PYTHONPYCACHEPREFIX="${tmp_dir}/pycache" python3 -m py_compile "${repo_root}/aoso_skill_cli/cli.py"
+PYTHONPATH="${repo_root}" python3 -m aoso_skill_cli.cli help >/dev/null
 bash -n "${repo_root}/skills/agent-self-optimizing-loop/scripts/setup_loop_workspace.sh"
 bash -n "${repo_root}/skills/aoso-repo-maintainer/scripts/sync_runtime_to_installable_skill.sh"
 bash -n "${repo_root}/skills/aoso-repo-maintainer/scripts/install_to_codex.sh"

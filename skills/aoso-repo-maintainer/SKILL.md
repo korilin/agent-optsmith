@@ -68,3 +68,18 @@ skills/aoso-repo-maintainer/scripts/install_to_codex.sh
 - `scripts/validate_repo_workflow.sh`: Syntax/parity/smoke checks for this repository.
 - `scripts/auto_commit.sh`: Auto-run loop logging, stage all changes, and create one non-interactive commit.
 - `scripts/install_to_codex.sh`: Install this project-local skill into `$CODEX_HOME/skills`.
+
+## Auto Optimization Snapshot
+<!-- AOSO_AUTO_OPT_START -->
+- updated_at: 2026-03-09T16:59:53
+- mode: existing
+- task_type: n/a
+- optimization_status: watch
+- opportunity_score: 50
+- source_report: /Users/korilin/Documents/github/agent-auto-self-optimizing-closed-loop/reports/skill-optimization/2026-03-09-aoso-repo-maintainer-optimization-plan.md
+- top_actions:
+  - Collect at least 10 no-skill baseline samples on the same task types.
+- top_root_causes:
+  - none
+- optimization_log: `references/auto-optimization.md`
+<!-- AOSO_AUTO_OPT_END -->

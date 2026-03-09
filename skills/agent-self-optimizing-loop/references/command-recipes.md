@@ -1,5 +1,14 @@
 # Command Recipes
 
+## 0) CLI entrypoint (no submodule)
+
+```bash
+aoso-skill update
+aoso-skill init --workspace "$(pwd)"
+aoso-skill dashboard --workspace "$(pwd)" --host 127.0.0.1 --port 8765
+aoso-skill help
+```
+
 ## 1) Initialize project data folder
 
 ```bash
