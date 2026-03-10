@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-repo_root="$(cd "$(dirname "$0")/../../.." && pwd)"
+script_dir="$(cd "$(dirname "$0")" && pwd)"
+repo_root="$(git -C "${script_dir}" rev-parse --show-toplevel 2>/dev/null || (cd "${script_dir}/../../../.." && pwd))"
 commit_message="chore(repo): automated workflow commit $(date +%Y-%m-%d)"
 run_loop="true"
 enforce_telemetry="false"
@@ -37,7 +38,7 @@ has_repo_changes() {
 usage() {
   cat <<'EOF'
 Usage:
-  skills/aoso-repo-maintainer/scripts/auto_commit.sh [options]
+  .agents/skills/aoso-repo-maintainer/scripts/auto_commit.sh [options]
 
 Options:
   --message "<commit-message>"

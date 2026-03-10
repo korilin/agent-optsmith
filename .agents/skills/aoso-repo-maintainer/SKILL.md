@@ -19,12 +19,12 @@ This skill is project-local and intended only for `agent-auto-self-optimizing-cl
 
 1. If root runtime scripts changed, run:
 ```bash
-skills/aoso-repo-maintainer/scripts/sync_runtime_to_installable_skill.sh
+.agents/skills/aoso-repo-maintainer/scripts/sync_runtime_to_installable_skill.sh
 ```
 
 2. Run repository validation:
 ```bash
-skills/aoso-repo-maintainer/scripts/validate_repo_workflow.sh
+.agents/skills/aoso-repo-maintainer/scripts/validate_repo_workflow.sh
 ```
 
 3. Keep `README.md` and `README_CN.md` synchronized:
@@ -32,7 +32,7 @@ skills/aoso-repo-maintainer/scripts/validate_repo_workflow.sh
 - Keep `README_SYNC_VERSION` marker identical in both files.
 - Validate using:
 ```bash
-skills/aoso-repo-maintainer/scripts/check_readme_sync.sh
+.agents/skills/aoso-repo-maintainer/scripts/check_readme_sync.sh
 ```
 
 4. If command behavior changed, update:
@@ -42,7 +42,7 @@ skills/aoso-repo-maintainer/scripts/check_readme_sync.sh
 
 5. Auto-commit after checks pass:
 ```bash
-skills/aoso-repo-maintainer/scripts/auto_commit.sh --message "docs: update workflow"
+.agents/skills/aoso-repo-maintainer/scripts/auto_commit.sh --message "docs: update workflow"
 ```
 
 `auto_commit.sh` now runs `scripts/auto_run_loop.sh` automatically before commit
@@ -51,7 +51,7 @@ Use `--skip-loop` or `--no-push` only for exceptional cases.
 
 6. If this skill changed and should be active locally, install it:
 ```bash
-skills/aoso-repo-maintainer/scripts/install_to_codex.sh
+.agents/skills/aoso-repo-maintainer/scripts/install_to_codex.sh
 ```
 
 7. Commit and push are done by `auto_commit.sh` only after workflow checks pass.

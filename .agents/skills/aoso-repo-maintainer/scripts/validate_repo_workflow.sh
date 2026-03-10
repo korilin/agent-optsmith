@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-repo_root="$(cd "$(dirname "$0")/../../.." && pwd)"
+script_dir="$(cd "$(dirname "$0")" && pwd)"
+repo_root="$(git -C "${script_dir}" rev-parse --show-toplevel 2>/dev/null || (cd "${script_dir}/../../../.." && pwd))"
 tmp_dir="$(mktemp -d)"
 trap 'rm -rf "${tmp_dir}"' EXIT
 
@@ -35,22 +36,22 @@ PYTHONPYCACHEPREFIX="${tmp_dir}/pycache" python3 -m py_compile "${repo_root}/aos
 PYTHONPYCACHEPREFIX="${tmp_dir}/pycache" python3 -m py_compile "${repo_root}/aoso_skill_cli/cli.py"
 PYTHONPATH="${repo_root}" python3 -m aoso_skill_cli.cli help >/dev/null
 bash -n "${repo_root}/skills/agent-self-optimizing-loop/scripts/setup_loop_workspace.sh"
-bash -n "${repo_root}/skills/aoso-repo-maintainer/scripts/sync_runtime_to_installable_skill.sh"
-bash -n "${repo_root}/skills/aoso-repo-maintainer/scripts/install_to_codex.sh"
-bash -n "${repo_root}/skills/aoso-repo-maintainer/scripts/check_readme_sync.sh"
-bash -n "${repo_root}/skills/aoso-repo-maintainer/scripts/auto_commit.sh"
+bash -n "${repo_root}/.agents/skills/aoso-repo-maintainer/scripts/sync_runtime_to_installable_skill.sh"
+bash -n "${repo_root}/.agents/skills/aoso-repo-maintainer/scripts/install_to_codex.sh"
+bash -n "${repo_root}/.agents/skills/aoso-repo-maintainer/scripts/check_readme_sync.sh"
+bash -n "${repo_root}/.agents/skills/aoso-repo-maintainer/scripts/auto_commit.sh"
 
 echo "[2/6] runtime/script parity checks"
 for f in "${runtime_scripts[@]}"; do
   cmp -s "${repo_root}/scripts/${f}" "${repo_root}/skills/agent-self-optimizing-loop/scripts/${f}" || {
     echo "error: runtime script out of sync: ${f}"
-    echo "hint: run skills/aoso-repo-maintainer/scripts/sync_runtime_to_installable_skill.sh"
+    echo "hint: run .agents/skills/aoso-repo-maintainer/scripts/sync_runtime_to_installable_skill.sh"
     exit 1
   }
 done
 
 echo "[3/6] README sync checks"
-"${repo_root}/skills/aoso-repo-maintainer/scripts/check_readme_sync.sh"
+"${repo_root}/.agents/skills/aoso-repo-maintainer/scripts/check_readme_sync.sh"
 
 echo "[4/6] root toolkit smoke test"
 mkdir -p "${tmp_dir}/rootdata/metrics" "${tmp_dir}/rootdata/knowledge-base/errors" "${tmp_dir}/rootdata/reports"

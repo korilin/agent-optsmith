@@ -10,19 +10,19 @@
 ## Required steps before commit
 
 1. If root runtime scripts changed, run:
-   - `skills/aoso-repo-maintainer/scripts/sync_runtime_to_installable_skill.sh`
+   - `.agents/skills/aoso-repo-maintainer/scripts/sync_runtime_to_installable_skill.sh`
 2. Run:
-   - `skills/aoso-repo-maintainer/scripts/validate_repo_workflow.sh`
+   - `.agents/skills/aoso-repo-maintainer/scripts/validate_repo_workflow.sh`
 3. Keep README English/Chinese synchronized:
    - update both `README.md` and `README_CN.md`
    - keep `README_SYNC_VERSION` marker identical
-   - run `skills/aoso-repo-maintainer/scripts/check_readme_sync.sh`
+   - run `.agents/skills/aoso-repo-maintainer/scripts/check_readme_sync.sh`
 4. Update docs when behavior or command usage changed:
    - `README.md`
    - `README_CN.md`
    - `docs/project-integration-guide-cn.md`
 5. Auto-commit and auto-push after all checks pass:
-   - `skills/aoso-repo-maintainer/scripts/auto_commit.sh --message "<commit-message>"`
+   - `.agents/skills/aoso-repo-maintainer/scripts/auto_commit.sh --message "<commit-message>"`
    - default behavior includes task logging via `scripts/auto_run_loop.sh` before commit
    - default behavior pushes to remote after commit
    - if strict telemetry is required, add `--enforce-telemetry`
@@ -33,6 +33,6 @@
 
 To make this project-specific skill available to Codex locally:
 
-- `skills/aoso-repo-maintainer/scripts/install_to_codex.sh`
+- `.agents/skills/aoso-repo-maintainer/scripts/install_to_codex.sh`
 
 After install, restart Codex.

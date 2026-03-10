@@ -48,14 +48,17 @@ Skill quality gates:
 
 Use project-local skill `aoso-repo-maintainer` for repository maintenance tasks:
 
-- path: `skills/aoso-repo-maintainer/`
-- trigger: any change to `scripts/`, `skills/`, CI, or workflow docs.
+- path: `.agents/skills/aoso-repo-maintainer/`
+- trigger: any change to `scripts/`, `.agents/skills/`, `skills/`, CI, or workflow docs.
+- local/public split:
+  - project-local maintainer skill: `.agents/skills/aoso-repo-maintainer/`
+  - installable public skill: `skills/agent-self-optimizing-loop/`
 - required workflow:
-  1. `skills/aoso-repo-maintainer/scripts/sync_runtime_to_installable_skill.sh` (when runtime scripts changed)
+  1. `.agents/skills/aoso-repo-maintainer/scripts/sync_runtime_to_installable_skill.sh` (when runtime scripts changed)
   2. Update docs when command behavior changed.
-  3. `skills/aoso-repo-maintainer/scripts/check_readme_sync.sh` (README.md and README_CN.md must stay synchronized)
-  4. `skills/aoso-repo-maintainer/scripts/validate_repo_workflow.sh`
-  5. `skills/aoso-repo-maintainer/scripts/auto_commit.sh --message "<commit-message>"`
+  3. `.agents/skills/aoso-repo-maintainer/scripts/check_readme_sync.sh` (README.md and README_CN.md must stay synchronized)
+  4. `.agents/skills/aoso-repo-maintainer/scripts/validate_repo_workflow.sh`
+  5. `.agents/skills/aoso-repo-maintainer/scripts/auto_commit.sh --message "<commit-message>"`
 
 ## Automation Policy
 

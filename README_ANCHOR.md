@@ -25,18 +25,24 @@
 任一条件满足，都走完整维护流程：
 
 1. 修改 `scripts/`。
-2. 修改 `skills/`。
-3. 修改 CI 配置。
-4. 修改流程文档（含 README、操作手册、工作流说明）。
+2. 修改 `.agents/skills/`（项目本地维护 skill）。
+3. 修改 `skills/`（对外开放/可安装 skill）。
+4. 修改 CI 配置。
+5. 修改流程文档（含 README、操作手册、工作流说明）。
 
-推荐直接使用本仓库维护 skill：`skills/aoso-repo-maintainer/`。
+推荐直接使用本仓库维护 skill：`.agents/skills/aoso-repo-maintainer/`。
+
+目录分层约定：
+
+- `.agents/skills/aoso-repo-maintainer/`：仅本仓库自用的维护 skill（面向仓库作者）。
+- `skills/agent-self-optimizing-loop/`：对外分发的可安装 skill（面向接入项目用户）。
 
 ## 4. 提交前必做流程（强制）
 
 ### Step A：如果改了 runtime 脚本，先做脚本同步
 
 ```bash
-skills/aoso-repo-maintainer/scripts/sync_runtime_to_installable_skill.sh
+.agents/skills/aoso-repo-maintainer/scripts/sync_runtime_to_installable_skill.sh
 ```
 
 用途：把 `scripts/` 的 runtime 实现同步到 `skills/agent-self-optimizing-loop/scripts/`。
@@ -52,13 +58,13 @@ skills/aoso-repo-maintainer/scripts/sync_runtime_to_installable_skill.sh
 校验命令：
 
 ```bash
-skills/aoso-repo-maintainer/scripts/check_readme_sync.sh
+.agents/skills/aoso-repo-maintainer/scripts/check_readme_sync.sh
 ```
 
 ### Step C：跑仓库级总校验
 
 ```bash
-skills/aoso-repo-maintainer/scripts/validate_repo_workflow.sh
+.agents/skills/aoso-repo-maintainer/scripts/validate_repo_workflow.sh
 ```
 
 该命令会覆盖：
@@ -74,7 +80,7 @@ skills/aoso-repo-maintainer/scripts/validate_repo_workflow.sh
 ### Step D：自动提交（通过校验后）
 
 ```bash
-skills/aoso-repo-maintainer/scripts/auto_commit.sh --message "<commit-message>"
+.agents/skills/aoso-repo-maintainer/scripts/auto_commit.sh --message "<commit-message>"
 ```
 
 说明：
