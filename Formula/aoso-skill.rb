@@ -5,7 +5,7 @@ class AosoSkill < Formula
   homepage "https://github.com/korilin/agent-auto-self-optimizing-closed-loop"
   url "https://github.com/korilin/agent-auto-self-optimizing-closed-loop.git",
       branch: "main"
-  version "0.1.0"
+  version "0.1.1"
   license "MIT"
 
   depends_on "python@3.11"
