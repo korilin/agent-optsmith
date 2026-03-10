@@ -31,7 +31,7 @@
 - `reports/`
 - `templates/error-entry.md`
 
-## 2. 安装 `optsmith` CLI（无 Submodule）
+## 2. 安装 `optsmith` CLI
 
 可选 Homebrew 或 pipx：
 

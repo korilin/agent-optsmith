@@ -31,7 +31,7 @@ In your project, data is stored under `.agent-loop-data/`:
 - `reports/`
 - `templates/error-entry.md`
 
-## 2. Install `optsmith` CLI (No Submodule)
+## 2. Install `optsmith` CLI
 
 Use either Homebrew or pipx:
 
