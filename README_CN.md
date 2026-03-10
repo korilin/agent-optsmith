@@ -101,6 +101,7 @@ aoso-skill dashboard --workspace "$(pwd)" --host 127.0.0.1 --port 8765
 在 `Skill Optimization Discovery` 区域可对现有 skill 立即执行优化。
 在 `New Skill Recommendations` 区域可一键创建并优化新增 skill。
 新增或优化后的 skill 文件默认写入项目 `.agents/skills/`（Codex 可自动读取的项目级目录）。
+项目内不再回退扫描旧目录 `skills/`。如需自定义路径，请设置 `AOSO_LOCAL_SKILLS_DIR`。
 
 3. 如需原始命令输出（可选）：
 

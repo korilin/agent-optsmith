@@ -102,6 +102,8 @@ Use the `Skill Optimization Discovery` section to optimize one skill immediately
 Use `New Skill Recommendations` to create-and-optimize a new skill immediately.
 New or optimized skill files are written under project `.agents/skills/` by default
 (Codex auto-readable project skill directory).
+Legacy fallback scan for project `skills/` is disabled. If you need a custom path,
+set `AOSO_LOCAL_SKILLS_DIR`.
 
 3. Optional direct report commands (if you need raw CLI output):
 

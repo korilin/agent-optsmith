@@ -1963,8 +1963,6 @@ def _skill_roots(paths: RuntimePaths) -> List[Path]:
     roots = [
         paths.local_skills_dir,
         paths.workspace_dir / ".agents/skills",
-        paths.workspace_dir / "skills",
-        paths.workspace_dir / ".agent-loop-data/skills",
         paths.script_dir.parent / "skills",
     ]
     unique: List[Path] = []
