@@ -125,7 +125,7 @@ optsmith uninstall --workspace "$(pwd)"
 
 ### 完整 Agent 优化工匠流程图
 
-![Optsmith 优化工匠流程图](docs/assets/agent-optsmith-workflow-flow.png)
+![Agent 优化工匠流程图](docs/assets/agent-optsmith-workflow-flow-zh.png)
 
 这张图的阅读顺序：
 

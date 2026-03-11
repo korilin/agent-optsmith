@@ -127,7 +127,7 @@ optsmith uninstall --workspace "$(pwd)"
 
 ### Complete Agent Optsmith Flow
 
-![Optsmith workflow flow](docs/assets/agent-optsmith-workflow-flow.png)
+![Agent Optsmith workflow map](docs/assets/agent-optsmith-workflow-flow.png)
 
 How to read this flow:
 
