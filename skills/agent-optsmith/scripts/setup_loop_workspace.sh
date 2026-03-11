@@ -10,7 +10,7 @@ Usage:
   ./scripts/setup_loop_workspace.sh [--workspace <path>]
 
 Description:
-  Initialize self-optimization data directories for the target project.
+  Initialize Agent Optsmith data directories for the target project.
 EOF
 }
 
@@ -39,7 +39,7 @@ fi
 
 workspace_dir="$(cd "${workspace_dir}" && pwd)"
 
-data_root="${OPTSMITH_DATA_ROOT:-${workspace_dir}/.agent-loop-data}"
+data_root="${OPTSMITH_DATA_ROOT:-${workspace_dir}/.agents/optsmith-data}"
 metrics_file="${OPTSMITH_DATA_FILE:-${data_root}/metrics/task-runs.csv}"
 kb_dir="${OPTSMITH_KB_DIR:-${data_root}/knowledge-base/errors}"
 report_dir="${OPTSMITH_REPORT_DIR:-${data_root}/reports}"
@@ -94,7 +94,7 @@ if [[ ! -f "${error_template}" ]]; then
   cp "${template_error}" "${error_template}"
 fi
 
-echo "initialized self-optimization workspace:"
+echo "initialized Agent Optsmith workspace:"
 echo "  workspace: ${workspace_dir}"
 echo "  data_root: ${data_root}"
 echo "  metrics_file: ${metrics_file}"

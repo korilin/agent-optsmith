@@ -3,7 +3,7 @@
 ## When to trigger this skill
 
 - Modify root scripts under `scripts/`.
-- Modify installable skill under `skills/agent-optsmith-loop/`.
+- Modify installable skill under `skills/agent-optsmith/`.
 - Change metrics logic, weekly review logic, or skill packaging.
 - Prepare release, tag, or major refactor of this repository.
 

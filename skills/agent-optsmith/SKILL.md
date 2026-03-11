@@ -1,17 +1,17 @@
 ---
-name: agent-optsmith-loop
-description: Set up and run a project-level self-optimizing loop for AI coding workflows with measurable impact. Use when users ask to introduce self-optimization in a repository, log per-task token and duration metrics, generate weekly error reviews, evaluate how much a skill reduced token usage, or compare engineering productivity before and after optimization changes.
+name: agent-optsmith
+description: Set up and run the Agent Optsmith workflow for AI coding tasks with measurable impact. Use when users ask to introduce optimization telemetry in a repository, log per-task token and duration metrics, generate weekly error reviews, evaluate skill impact, or compare engineering productivity before and after process improvements.
 ---
 
-# Agent Self-Optimizing Loop
+# Agent Optsmith
 
 Use this skill to operationalize and measure continuous optimization in any project.
 
 ## Required Paths
 
 - Prefer CLI entrypoint (`optsmith`) so users do not need to resolve install paths manually.
-- Use project-local data under `.agent-loop-data/`
-- CLI entrypoint: `optsmith` (`init`, `update`, `dashboard`, `run`, `metrics`, `optimize`, `help`).
+- Use project-local data under `.agents/optsmith-data/`
+- CLI entrypoint: `optsmith` (`install`, `update`, `dashboard`, `run`, `metrics`, `optimize`, `help`).
 
 ## Automation Behavior
 
@@ -22,7 +22,7 @@ Use this skill to operationalize and measure continuous optimization in any proj
 
 ## Mandatory Guarantees
 
-- `agent-optsmith-loop` must persist one task record for every completed task.
+- `agent-optsmith` must persist one task record for every completed task.
 - A task should not be reported complete before `optsmith run ...` succeeds.
 - Prefer real telemetry values for `total_tokens` and `duration_sec`.
 - If runtime telemetry is unavailable, explicitly mark this as telemetry gap and fix the integration.
@@ -31,7 +31,7 @@ Use this skill to operationalize and measure continuous optimization in any proj
 
 1. Initialize project data once:
 ```bash
-optsmith init --workspace "$(pwd)"
+optsmith install --workspace "$(pwd)"
 ```
 
 2. Run automation at task completion (collection + analysis + review):
@@ -48,8 +48,8 @@ optsmith run --workspace "$(pwd)" \
   --success true
 ```
 
-3. Record failures in `.agent-loop-data/knowledge-base/errors/` using the generated template:
-- `.agent-loop-data/templates/error-entry.md`
+3. Record failures in `.agents/optsmith-data/knowledge-base/errors/` using the generated template:
+- `.agents/optsmith-data/templates/error-entry.md`
 
 4. Open the web dashboard for filtering and visualization:
 ```bash

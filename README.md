@@ -2,7 +2,7 @@
 
 <!-- README_SYNC_VERSION: 2026-03-10 -->
 
-This project helps you run a measurable self-optimization loop for AI coding work.
+This project provides an Agent Optsmith workflow for measurable AI coding optimization.
 If your goal is to use the skill in your own repository, this file is the entry point.
 
 If you maintain this repository itself, use [README_ANCHOR.md](README_ANCHOR.md).
@@ -11,12 +11,12 @@ Companion docs:
 
 - [中文说明](README_CN.md)
 - [Author Anchor Guide](README_ANCHOR.md)
-- [Closed-Loop Playbook](docs/closed-loop-playbook.md)
+- [Optimization Playbook](docs/optsmith-playbook.md)
 - [Measurement Framework](docs/measurement-framework.md)
 
 ## 1. What You Get as a User
 
-After setup, you get a repeatable loop with concrete outputs:
+After setup, you get a repeatable optimization workflow with concrete outputs:
 
 1. Automatic run logging + metrics + weekly review with one command.
 2. Skill impact reports (`token_reduction_pct`, `duration_reduction_pct`, etc.).
@@ -24,7 +24,7 @@ After setup, you get a repeatable loop with concrete outputs:
 4. Skill optimization discovery with immediate optimize/create actions from dashboard.
 5. Clear pre/post comparison around a chosen cutover date.
 
-In your project, data is stored under `.agent-loop-data/`:
+In your project, data is stored under `.agents/optsmith-data/`:
 
 - `metrics/task-runs.csv`
 - `knowledge-base/errors/`
@@ -44,10 +44,9 @@ brew install optsmith
 pipx install "git+https://github.com/korilin/agent-optsmith.git"
 ```
 
-Then install or update runtime skill assets:
+Then verify the CLI entrypoint:
 
 ```bash
-optsmith update
 optsmith help
 ```
 
@@ -56,17 +55,17 @@ optsmith help
 Run this in the target project root:
 
 ```bash
-optsmith init --workspace "$(pwd)"
+optsmith install --workspace "$(pwd)"
 ```
 
 Expected result:
 
-- `.agent-loop-data/metrics/task-runs.csv` created (with header).
-- `.agent-loop-data/knowledge-base/errors/` created.
-- `.agent-loop-data/reports/` created.
-- `.agent-loop-data/templates/error-entry.md` created.
-- `.agent-loop-data/skills` is not created by `init`.
-- `AGENTS.md` gets/refreshes a managed `OPTSMITH-SKILL` block.
+- `.agents/optsmith-data/metrics/task-runs.csv` created (with header).
+- `.agents/optsmith-data/knowledge-base/errors/` created.
+- `.agents/optsmith-data/reports/` created.
+- `.agents/optsmith-data/templates/error-entry.md` created.
+- `<workspace>/.agents/skills/agent-optsmith` installed from current CLI version.
+- `AGENTS.md` gets/refreshes a managed `OPTSMITH-SKILL` block with `skill_dir` and `data_dir`.
 
 ## 4. Daily Workflow (Fully Automated Path)
 
@@ -114,15 +113,21 @@ optsmith metrics --workspace "$(pwd)" --all --cutover YYYY-MM-DD
 optsmith optimize --workspace "$(pwd)" --skill log-analysis-helper
 ```
 
-4. Upgrade runtime skill when needed:
+4. Update project-installed skill to current CLI version:
 
 ```bash
-optsmith update
+optsmith update --workspace "$(pwd)"
 ```
 
-### Complete Closed-Loop Flow
+5. Uninstall project integration when needed:
 
-![Optsmith closed-loop flow](docs/assets/self-optimization-closed-loop-flow.png)
+```bash
+optsmith uninstall --workspace "$(pwd)"
+```
+
+### Complete Agent Optsmith Flow
+
+![Optsmith workflow flow](docs/assets/agent-optsmith-workflow-flow.png)
 
 How to read this flow:
 
@@ -131,11 +136,11 @@ How to read this flow:
 2. Discovery mechanism:
 - `optsmith metrics` + weekly review + opportunity scoring + new-skill recommendation logic drive optimization candidates.
 3. Where records are saved:
-- Run data: `.agent-loop-data/metrics/task-runs.csv`
-- Error KB: `.agent-loop-data/knowledge-base/errors/*.md`
-- Optimization reports: `.agent-loop-data/reports/skill-optimization/*`
+- Run data: `.agents/optsmith-data/metrics/task-runs.csv`
+- Error KB: `.agents/optsmith-data/knowledge-base/errors/*.md`
+- Optimization reports: `.agents/optsmith-data/reports/skill-optimization/*`
 4. Where optimization status is saved:
-- `.agent-loop-data/reports/dashboard-optimization-state.json`
+- `.agents/optsmith-data/reports/dashboard-optimization-state.json`
 - This file is shared by the project, so different browsers can see the same optimized/created status.
 5. Status transition:
 - `DISCOVERED -> TRIGGERED -> APPLIED -> VERIFIED -> PROMOTED`

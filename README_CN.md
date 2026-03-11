@@ -2,7 +2,7 @@
 
 <!-- README_SYNC_VERSION: 2026-03-10 -->
 
-这个项目用于在你的工程里落地“可量化”的 AI 编码自优化闭环。
+这个项目用于在你的工程里落地“可量化”的 Agent 优化工匠流程。
 如果你的目标是“作为 skill 使用者快速上手”，请从这份 README 开始。
 
 如果你是维护本仓库的作者，请看 [README_ANCHOR.md](README_ANCHOR.md)。
@@ -11,12 +11,12 @@
 
 - [English Guide](README.md)
 - [作者锚点说明](README_ANCHOR.md)
-- [闭环运行手册](docs/closed-loop-playbook.md)
+- [优化运行手册](docs/optsmith-playbook.md)
 - [指标评估方法](docs/measurement-framework.md)
 
 ## 1. 作为用户你能得到什么
 
-初始化完成后，你会得到一套稳定循环和清晰产物：
+初始化完成后，你会得到一套稳定优化流程和清晰产物：
 
 1. 一条命令自动完成记录 + 分析 + 周报。
 2. skill 效果评估（`token_reduction_pct`、`duration_reduction_pct` 等）。
@@ -24,7 +24,7 @@
 4. skill 优化机会自动发现，并支持在看板中立即执行优化/创建。
 5. 指定切换日期后的 pre/post 对比结果。
 
-数据默认在你的项目目录 `.agent-loop-data/` 下：
+数据默认在你的项目目录 `.agents/optsmith-data/` 下：
 
 - `metrics/task-runs.csv`
 - `knowledge-base/errors/`
@@ -44,10 +44,9 @@ brew install optsmith
 pipx install "git+https://github.com/korilin/agent-optsmith.git"
 ```
 
-然后执行运行时 skill 安装/升级：
+然后验证 CLI 可用：
 
 ```bash
-optsmith update
 optsmith help
 ```
 
@@ -56,17 +55,17 @@ optsmith help
 在目标项目根目录运行：
 
 ```bash
-optsmith init --workspace "$(pwd)"
+optsmith install --workspace "$(pwd)"
 ```
 
 预期结果：
 
-- 自动创建 `.agent-loop-data/metrics/task-runs.csv`（含表头）。
-- 自动创建 `.agent-loop-data/knowledge-base/errors/`。
-- 自动创建 `.agent-loop-data/reports/`。
-- 自动创建 `.agent-loop-data/templates/error-entry.md`。
-- `init` 不会创建 `.agent-loop-data/skills`。
-- 自动更新或创建 `AGENTS.md` 中的 `OPTSMITH-SKILL` 托管区块。
+- 自动创建 `.agents/optsmith-data/metrics/task-runs.csv`（含表头）。
+- 自动创建 `.agents/optsmith-data/knowledge-base/errors/`。
+- 自动创建 `.agents/optsmith-data/reports/`。
+- 自动创建 `.agents/optsmith-data/templates/error-entry.md`。
+- 自动安装 `<workspace>/.agents/skills/agent-optsmith`（当前 CLI 版本对应 skill）。
+- 自动更新或创建 `AGENTS.md` 中的 `OPTSMITH-SKILL` 托管区块（含 `skill_dir`、`data_dir`）。
 
 ## 4. 日常使用路径（全自动）
 
@@ -112,15 +111,21 @@ optsmith metrics --workspace "$(pwd)" --all --cutover YYYY-MM-DD
 optsmith optimize --workspace "$(pwd)" --skill log-analysis-helper
 ```
 
-4. 需要升级运行时 skill 时执行：
+4. 需要把项目内 skill 更新到当前 CLI 版本时执行：
 
 ```bash
-optsmith update
+optsmith update --workspace "$(pwd)"
 ```
 
-### 完整闭环流程图
+5. 需要移除项目集成时执行：
 
-![Optsmith 闭环流程图](docs/assets/self-optimization-closed-loop-flow.png)
+```bash
+optsmith uninstall --workspace "$(pwd)"
+```
+
+### 完整 Agent 优化工匠流程图
+
+![Optsmith 优化工匠流程图](docs/assets/agent-optsmith-workflow-flow.png)
 
 这张图的阅读顺序：
 
@@ -129,11 +134,11 @@ optsmith update
 2. 优化发现机制：
 - 基于 `optsmith metrics`、weekly review、机会评分和新增 skill 推荐逻辑得出候选项。
 3. 数据记录保存位置：
-- 运行记录：`.agent-loop-data/metrics/task-runs.csv`
-- 失败知识库：`.agent-loop-data/knowledge-base/errors/*.md`
-- 优化报告：`.agent-loop-data/reports/skill-optimization/*`
+- 运行记录：`.agents/optsmith-data/metrics/task-runs.csv`
+- 失败知识库：`.agents/optsmith-data/knowledge-base/errors/*.md`
+- 优化报告：`.agents/optsmith-data/reports/skill-optimization/*`
 4. 优化状态保存位置：
-- `.agent-loop-data/reports/dashboard-optimization-state.json`
+- `.agents/optsmith-data/reports/dashboard-optimization-state.json`
 - 这是项目共享文件，所以换浏览器后仍能看到已优化/已创建状态。
 5. 状态变化链路：
 - `DISCOVERED -> TRIGGERED -> APPLIED -> VERIFIED -> PROMOTED`

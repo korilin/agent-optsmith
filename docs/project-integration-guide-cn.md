@@ -2,7 +2,7 @@
 
 ## 目标
 
-将本项目“自优化闭环”能力接入任意工程，并做到：
+将本项目“Agent 优化工匠”能力接入任意工程，并做到：
 
 - 流程可复用：任务记录、失败复盘、周报、技能迭代
 - 效果可量化：token、时长、成功率、返工率
@@ -10,7 +10,7 @@
 
 ## 接入方式（唯一推荐）
 
-通过 `optsmith` CLI 安装与操作，业务仓库只保留本地数据目录 `.agent-loop-data/`。
+通过 `optsmith` CLI 安装与操作，业务仓库只保留本地数据目录 `.agents/optsmith-data/`。
 
 ## 1) 安装 `optsmith` CLI
 
@@ -27,10 +27,10 @@ brew install optsmith
 pipx install "git+https://github.com/korilin/agent-optsmith.git"
 ```
 
-## 2) 安装或更新运行时 skill
+## 2) 验证 CLI 可用
 
 ```bash
-optsmith update
+optsmith help
 ```
 
 ## 3) 在目标工程初始化
@@ -38,18 +38,27 @@ optsmith update
 在目标工程根目录执行：
 
 ```bash
-optsmith init --workspace "$(pwd)"
+optsmith install --workspace "$(pwd)"
 ```
 
-这会创建：
+这会创建/安装：
 
-- `.agent-loop-data/metrics/task-runs.csv`
-- `.agent-loop-data/knowledge-base/errors/`
-- `.agent-loop-data/reports/`
-- `.agent-loop-data/templates/error-entry.md`
-- 不会创建 `.agent-loop-data/skills`
+- `.agents/optsmith-data/metrics/task-runs.csv`
+- `.agents/optsmith-data/knowledge-base/errors/`
+- `.agents/optsmith-data/reports/`
+- `.agents/optsmith-data/templates/error-entry.md`
+- `.agents/skills/agent-optsmith`（项目内 skill）
 
-同时会更新（或创建）项目根目录 `AGENTS.md` 里的 `OPTSMITH-SKILL` 托管区块。
+同时会更新（或创建）项目根目录 `AGENTS.md` 里的 `OPTSMITH-SKILL` 托管区块，
+并声明 `skill_dir`、`data_dir`。
+
+如需自定义目录：
+
+```bash
+optsmith install --workspace "$(pwd)" \
+  --data-dir ".agents/optsmith-data" \
+  --skill-path ".agents/skills"
+```
 
 ## 4) 日常命令
 
@@ -76,9 +85,21 @@ optsmith run --workspace "$(pwd)" \
 
 补充：如果未显式传 `--total-tokens/--duration-sec`，`optsmith run` 会从本地 Codex session 日志自动回填（`$CODEX_HOME/sessions` 与 `$CODEX_HOME/archived_sessions`，有 `CODEX_THREAD_ID` 时按线程匹配）。
 
+项目内 skill 升级到当前 CLI 版本：
+
+```bash
+optsmith update --workspace "$(pwd)"
+```
+
+移除项目集成（删除托管区块、数据目录、项目 skill）：
+
+```bash
+optsmith uninstall --workspace "$(pwd)"
+```
+
 ## 在目标工程如何真正生效
 
-1. `AGENTS.md` 中声明：任务执行需使用 `agent-optsmith-loop`。
+1. `AGENTS.md` 中声明：任务执行需使用 `agent-optsmith`。
 2. 每个任务结束自动执行 `optsmith run ...`。
 3. 每个失败事件写一条 error entry（脚本自动分析会读取这些条目）。
 4. 用 dashboard 做日期/skill/指标筛选，并触发优化与新增 skill。

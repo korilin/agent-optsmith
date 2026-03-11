@@ -11,7 +11,7 @@ Deliver high-quality outcomes while reducing average token cost per task over ti
 - `rework_rate`: Fraction of tasks reopened after first delivery.
 - `skill_hit_rate`: Fraction of tasks solved with existing skills.
 
-## Operating Loop
+## Operating Workflow
 
 1. Classify request by task type and risk.
 2. Reuse existing skill if available; avoid rebuilding context from scratch.
@@ -52,7 +52,7 @@ Use project-local skill `optsmith-repo-maintainer` for repository maintenance ta
 - trigger: any change to `scripts/`, `.agents/skills/`, `skills/`, CI, or workflow docs.
 - local/public split:
   - project-local maintainer skill: `.agents/skills/optsmith-repo-maintainer/`
-  - installable public skill: `skills/agent-optsmith-loop/`
+  - installable public skill: `skills/agent-optsmith/`
 - required workflow:
   1. `.agents/skills/optsmith-repo-maintainer/scripts/sync_runtime_to_installable_skill.sh` (when runtime scripts changed)
   2. Update docs when command behavior changed.
@@ -62,13 +62,13 @@ Use project-local skill `optsmith-repo-maintainer` for repository maintenance ta
 
 ## Automation Policy
 
-- Prefer `scripts/auto_run_loop.sh` / `skills/agent-optsmith-loop/scripts/auto_run_loop.sh` over manual multi-command operation.
+- Prefer `scripts/auto_run_loop.sh` / `skills/agent-optsmith/scripts/auto_run_loop.sh` over manual multi-command operation.
 - Prefer dashboard filtering via `scripts/dashboard_server.sh` for interactive metric analysis.
 - Use `scripts/optimize_skill.sh` (or dashboard trigger) to generate explicit optimization plans per skill.
 
 ## Error KB Policy
 
-For every notable failure, create one file under `.agent-loop-data/knowledge-base/errors/` named:
+For every notable failure, create one file under `.agents/optsmith-data/knowledge-base/errors/` named:
 
 `YYYY-MM-DD-short-slug.md`
 
@@ -108,7 +108,9 @@ Run `./scripts/weekly_review.sh` once per week and review:
 - Follow-up rule/skill updates are clearly identified.
 
 <!-- OPTSMITH-SKILL:START -->
-## Optsmith Skill Integration
-- Always load and use `agent-optsmith-loop` for project tasks.
+## Agent Optsmith Integration
+- skill: `agent-optsmith`
+- skill_dir: `.agents/skills`
+- data_dir: `.agents/optsmith-data`
 - At task completion, run `optsmith run ...`.
 <!-- OPTSMITH-SKILL:END -->

@@ -2,7 +2,7 @@
 
 ## Data Model
 
-Use `.agent-loop-data/metrics/task-runs.csv` with one row per completed task:
+Use `.agents/optsmith-data/metrics/task-runs.csv` with one row per completed task:
 
 - `date`: `YYYY-MM-DD`
 - `task_id`: unique identifier
@@ -76,7 +76,7 @@ Compare:
 If this toolkit is used in another project, point to the project-local data file:
 
 ```bash
-export OPTSMITH_DATA_FILE=.agent-loop-data/metrics/task-runs.csv
+export OPTSMITH_DATA_FILE=.agents/optsmith-data/metrics/task-runs.csv
 ```
 
 ```bash

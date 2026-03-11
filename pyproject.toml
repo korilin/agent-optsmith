@@ -4,15 +4,15 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "optsmith"
-version = "0.1.2"
-description = "CLI for initializing and operating the agent-optsmith-loop skill in projects."
+version = "0.2.0"
+description = "CLI for Agent Optsmith: project-local skill install, telemetry, and optimization workflow."
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.9"
 authors = [
   { name = "Optsmith Maintainers" }
 ]
-keywords = ["codex", "skill", "self-optimization", "dashboard"]
+keywords = ["codex", "skill", "agent-optimization", "dashboard", "optsmith"]
 classifiers = [
   "Programming Language :: Python :: 3",
   "Environment :: Console",
@@ -23,3 +23,6 @@ optsmith = "optsmith_cli.cli:main"
 
 [tool.setuptools]
 packages = ["optsmith_cli"]
+
+[tool.setuptools.package-data]
+optsmith_cli = ["resources/skills/agent-optsmith/**"]

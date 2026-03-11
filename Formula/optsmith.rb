@@ -1,11 +1,11 @@
 class Optsmith < Formula
   include Language::Python::Virtualenv
 
-  desc "CLI for initializing and operating the Optsmith self-optimizing skill"
+  desc "CLI for Agent Optsmith project skill installation and optimization workflow"
   homepage "https://github.com/korilin/agent-optsmith"
   url "https://github.com/korilin/agent-optsmith.git",
       branch: "main"
-  version "0.1.2"
+  version "0.2.0"
   license "MIT"
 
   depends_on "python@3.11"

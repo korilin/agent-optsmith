@@ -5,7 +5,8 @@ script_dir="$(cd "$(dirname "$0")" && pwd)"
 repo_root="$(git -C "${script_dir}" rev-parse --show-toplevel 2>/dev/null || (cd "${script_dir}/../../../.." && pwd))"
 
 src_dir="${repo_root}/scripts"
-dst_dir="${repo_root}/skills/agent-optsmith-loop/scripts"
+dst_dir="${repo_root}/skills/agent-optsmith/scripts"
+bundle_skill_dir="${repo_root}/optsmith_cli/resources/skills/agent-optsmith"
 
 runtime_scripts=(
   "log_task_run.sh"
@@ -34,3 +35,15 @@ done
 
 echo "runtime scripts synced to installable skill:"
 echo "  ${dst_dir}"
+
+if [[ ! -d "${repo_root}/skills/agent-optsmith" ]]; then
+  echo "error: missing installable skill directory: ${repo_root}/skills/agent-optsmith"
+  exit 1
+fi
+
+rm -rf "${bundle_skill_dir}"
+mkdir -p "$(dirname "${bundle_skill_dir}")"
+cp -R "${repo_root}/skills/agent-optsmith" "${bundle_skill_dir}"
+
+echo "installable skill synced to CLI bundled assets:"
+echo "  ${bundle_skill_dir}"

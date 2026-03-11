@@ -16,7 +16,7 @@ runtime_scripts=(
   "dashboard_server.py"
 )
 
-echo "[1/6] shell syntax checks"
+echo "[1/7] shell syntax checks"
 bash -n "${repo_root}/scripts/create_skill.sh"
 shell_runtime_scripts=(
   "log_task_run.sh"
@@ -28,34 +28,50 @@ shell_runtime_scripts=(
 )
 for f in "${shell_runtime_scripts[@]}"; do
   bash -n "${repo_root}/scripts/${f}"
-  bash -n "${repo_root}/skills/agent-optsmith-loop/scripts/${f}"
+  bash -n "${repo_root}/skills/agent-optsmith/scripts/${f}"
 done
 PYTHONPYCACHEPREFIX="${tmp_dir}/pycache" python3 -m py_compile "${repo_root}/scripts/dashboard_server.py"
-PYTHONPYCACHEPREFIX="${tmp_dir}/pycache" python3 -m py_compile "${repo_root}/skills/agent-optsmith-loop/scripts/dashboard_server.py"
+PYTHONPYCACHEPREFIX="${tmp_dir}/pycache" python3 -m py_compile "${repo_root}/skills/agent-optsmith/scripts/dashboard_server.py"
 PYTHONPYCACHEPREFIX="${tmp_dir}/pycache" python3 -m py_compile "${repo_root}/optsmith_cli/__init__.py"
 PYTHONPYCACHEPREFIX="${tmp_dir}/pycache" python3 -m py_compile "${repo_root}/optsmith_cli/cli.py"
 PYTHONPATH="${repo_root}" python3 -m optsmith_cli.cli help >/dev/null
-bash -n "${repo_root}/skills/agent-optsmith-loop/scripts/setup_loop_workspace.sh"
+bash -n "${repo_root}/skills/agent-optsmith/scripts/setup_loop_workspace.sh"
 bash -n "${repo_root}/.agents/skills/optsmith-repo-maintainer/scripts/sync_runtime_to_installable_skill.sh"
 bash -n "${repo_root}/.agents/skills/optsmith-repo-maintainer/scripts/install_to_codex.sh"
 bash -n "${repo_root}/.agents/skills/optsmith-repo-maintainer/scripts/check_readme_sync.sh"
 bash -n "${repo_root}/.agents/skills/optsmith-repo-maintainer/scripts/auto_commit.sh"
 
-echo "[2/6] runtime/script parity checks"
+echo "[2/7] runtime/script parity checks"
 for f in "${runtime_scripts[@]}"; do
-  cmp -s "${repo_root}/scripts/${f}" "${repo_root}/skills/agent-optsmith-loop/scripts/${f}" || {
+  cmp -s "${repo_root}/scripts/${f}" "${repo_root}/skills/agent-optsmith/scripts/${f}" || {
     echo "error: runtime script out of sync: ${f}"
     echo "hint: run .agents/skills/optsmith-repo-maintainer/scripts/sync_runtime_to_installable_skill.sh"
     exit 1
   }
 done
 
-echo "[3/6] README sync checks"
+for f in "${runtime_scripts[@]}"; do
+  cmp -s "${repo_root}/skills/agent-optsmith/scripts/${f}" "${repo_root}/optsmith_cli/resources/skills/agent-optsmith/scripts/${f}" || {
+    echo "error: bundled CLI script out of sync: ${f}"
+    echo "hint: run .agents/skills/optsmith-repo-maintainer/scripts/sync_runtime_to_installable_skill.sh"
+    exit 1
+  }
+done
+
+echo "[3/7] README sync checks"
 "${repo_root}/.agents/skills/optsmith-repo-maintainer/scripts/check_readme_sync.sh"
 
-echo "[4/6] root toolkit smoke test"
+echo "[4/7] root toolkit smoke test"
 mkdir -p "${tmp_dir}/rootdata/metrics" "${tmp_dir}/rootdata/knowledge-base/errors" "${tmp_dir}/rootdata/reports"
-cp "${repo_root}/.agent-loop-data/metrics/task-runs.csv" "${tmp_dir}/rootdata/metrics/task-runs.csv"
+seed_csv="${repo_root}/.agents/optsmith-data/metrics/task-runs.csv"
+if [[ ! -f "${seed_csv}" && -f "${repo_root}/.agent-loop-data/metrics/task-runs.csv" ]]; then
+  seed_csv="${repo_root}/.agent-loop-data/metrics/task-runs.csv"
+fi
+if [[ -f "${seed_csv}" ]]; then
+  cp "${seed_csv}" "${tmp_dir}/rootdata/metrics/task-runs.csv"
+else
+  echo "date,task_id,task_type,project,model,used_skill,skill_name,total_tokens,duration_sec,success,rework_count" > "${tmp_dir}/rootdata/metrics/task-runs.csv"
+fi
 OPTSMITH_DATA_FILE="${tmp_dir}/rootdata/metrics/task-runs.csv" \
   "${repo_root}/scripts/log_task_run.sh" \
   --task-id "TASK-ROOT-CHECK-1" \
@@ -80,7 +96,7 @@ OPTSMITH_REPORT_DIR="${tmp_dir}/rootdata/reports" \
   --project "optsmith" \
   --model "gpt-5" \
   --used-skill "true" \
-  --skill-name "agent-optsmith-loop" \
+  --skill-name "agent-optsmith" \
   --total-tokens "130" \
   --duration-sec "13" \
   --success "true" \
@@ -108,7 +124,7 @@ CODEX_THREAD_ID="${mock_thread_id}" \
   --project "optsmith" \
   --model "gpt-5" \
   --used-skill "true" \
-  --skill-name "agent-optsmith-loop" \
+  --skill-name "agent-optsmith" \
   --success "true" \
   --skip-weekly >/dev/null
 
@@ -129,17 +145,17 @@ fi
 OPTSMITH_DATA_FILE="${tmp_dir}/rootdata/metrics/task-runs.csv" \
 OPTSMITH_KB_DIR="${tmp_dir}/rootdata/knowledge-base/errors" \
 OPTSMITH_OPT_REPORT_DIR="${tmp_dir}/rootdata/reports/skill-optimization" \
-  "${repo_root}/scripts/optimize_skill.sh" --skill "agent-optsmith-loop" >/dev/null
+  "${repo_root}/scripts/optimize_skill.sh" --skill "agent-optsmith" >/dev/null
 "${repo_root}/scripts/dashboard_server.sh" --host "127.0.0.1" --port "8876" >/dev/null 2>&1 &
 dashboard_pid_root=$!
 sleep 1
 kill "${dashboard_pid_root}" >/dev/null 2>&1 || true
 
-echo "[5/6] installable skill smoke test"
+echo "[5/7] installable skill smoke test"
 mkdir -p "${tmp_dir}/skill-project"
 cd "${tmp_dir}/skill-project"
-"${repo_root}/skills/agent-optsmith-loop/scripts/setup_loop_workspace.sh" --workspace "$(pwd)" >/dev/null
-"${repo_root}/skills/agent-optsmith-loop/scripts/log_task_run.sh" \
+"${repo_root}/skills/agent-optsmith/scripts/setup_loop_workspace.sh" --workspace "$(pwd)" >/dev/null
+"${repo_root}/skills/agent-optsmith/scripts/log_task_run.sh" \
   --task-id "TASK-SKILL-CHECK-1" \
   --task-type "debug" \
   --project "optsmith" \
@@ -148,26 +164,54 @@ cd "${tmp_dir}/skill-project"
   --total-tokens "120" \
   --duration-sec "12" \
   --success "true"
-"${repo_root}/skills/agent-optsmith-loop/scripts/metrics_report.sh" --all >/dev/null
-"${repo_root}/skills/agent-optsmith-loop/scripts/weekly_review.sh" >/dev/null
-"${repo_root}/skills/agent-optsmith-loop/scripts/auto_run_loop.sh" \
+"${repo_root}/skills/agent-optsmith/scripts/metrics_report.sh" --all >/dev/null
+"${repo_root}/skills/agent-optsmith/scripts/weekly_review.sh" >/dev/null
+"${repo_root}/skills/agent-optsmith/scripts/auto_run_loop.sh" \
   --task-id "TASK-SKILL-AUTO-1" \
   --task-type "ops" \
   --project "optsmith" \
   --model "gpt-5" \
   --used-skill "true" \
-  --skill-name "agent-optsmith-loop" \
+  --skill-name "agent-optsmith" \
   --total-tokens "140" \
   --duration-sec "14" \
   --success "true" \
   --skip-weekly >/dev/null
-OPTSMITH_OPT_REPORT_DIR="${tmp_dir}/skill-project/.agent-loop-data/reports/skill-optimization" \
-  "${repo_root}/skills/agent-optsmith-loop/scripts/optimize_skill.sh" --skill "agent-optsmith-loop" >/dev/null
-"${repo_root}/skills/agent-optsmith-loop/scripts/dashboard_server.sh" --host "127.0.0.1" --port "8877" >/dev/null 2>&1 &
+OPTSMITH_OPT_REPORT_DIR="${tmp_dir}/skill-project/.agents/optsmith-data/reports/skill-optimization" \
+  "${repo_root}/skills/agent-optsmith/scripts/optimize_skill.sh" --skill "agent-optsmith" >/dev/null
+"${repo_root}/skills/agent-optsmith/scripts/dashboard_server.sh" --host "127.0.0.1" --port "8877" >/dev/null 2>&1 &
 dashboard_pid_skill=$!
 sleep 1
 kill "${dashboard_pid_skill}" >/dev/null 2>&1 || true
 cd "${repo_root}"
 
-echo "[6/6] done"
+echo "[6/7] CLI project install/update/uninstall smoke test"
+mkdir -p "${tmp_dir}/cli-project"
+PYTHONPATH="${repo_root}" python3 -m optsmith_cli.cli install \
+  --workspace "${tmp_dir}/cli-project" \
+  --skill-path ".agents/skills" \
+  --data-dir ".agents/optsmith-data" >/dev/null
+
+test -f "${tmp_dir}/cli-project/AGENTS.md"
+test -d "${tmp_dir}/cli-project/.agents/skills/agent-optsmith"
+test -f "${tmp_dir}/cli-project/.agents/optsmith-data/metrics/task-runs.csv"
+grep -Eq 'skill_dir: `.agents/skills`|data_dir: `.agents/optsmith-data`' "${tmp_dir}/cli-project/AGENTS.md"
+
+PYTHONPATH="${repo_root}" python3 -m optsmith_cli.cli update --workspace "${tmp_dir}/cli-project" >/dev/null
+PYTHONPATH="${repo_root}" python3 -m optsmith_cli.cli uninstall --workspace "${tmp_dir}/cli-project" >/dev/null
+
+if [[ -d "${tmp_dir}/cli-project/.agents/skills/agent-optsmith" ]]; then
+  echo "error: uninstall should remove installed project skill"
+  exit 1
+fi
+if [[ -d "${tmp_dir}/cli-project/.agents/optsmith-data" ]]; then
+  echo "error: uninstall should remove data directory"
+  exit 1
+fi
+if grep -q '<!-- OPTSMITH-SKILL:START -->' "${tmp_dir}/cli-project/AGENTS.md"; then
+  echo "error: uninstall should remove OPTSMITH-SKILL managed block"
+  exit 1
+fi
+
+echo "[7/7] done"
 echo "repository workflow validation passed"

@@ -7,16 +7,16 @@ if [[ -f "${SCRIPT_DIR}/../SKILL.md" ]]; then
   mode="skill"
   workspace_dir="${OPTSMITH_WORKSPACE_DIR:-$(pwd)}"
   workspace_dir="$(cd "${workspace_dir}" && pwd)"
-  data_file_default="${workspace_dir}/.agent-loop-data/metrics/task-runs.csv"
-  kb_dir_default="${workspace_dir}/.agent-loop-data/knowledge-base/errors"
-  report_dir_default="${workspace_dir}/.agent-loop-data/reports/skill-optimization"
+  data_file_default="${workspace_dir}/.agents/optsmith-data/metrics/task-runs.csv"
+  kb_dir_default="${workspace_dir}/.agents/optsmith-data/knowledge-base/errors"
+  report_dir_default="${workspace_dir}/.agents/optsmith-data/reports/skill-optimization"
 else
   mode="root"
   workspace_dir="${OPTSMITH_WORKSPACE_DIR:-$(pwd)}"
   workspace_dir="$(cd "${workspace_dir}" && pwd)"
-  data_file_default="${workspace_dir}/.agent-loop-data/metrics/task-runs.csv"
-  kb_dir_default="${workspace_dir}/.agent-loop-data/knowledge-base/errors"
-  report_dir_default="${workspace_dir}/.agent-loop-data/reports/skill-optimization"
+  data_file_default="${workspace_dir}/.agents/optsmith-data/metrics/task-runs.csv"
+  kb_dir_default="${workspace_dir}/.agents/optsmith-data/knowledge-base/errors"
+  report_dir_default="${workspace_dir}/.agents/optsmith-data/reports/skill-optimization"
 fi
 
 data_file="${OPTSMITH_DATA_FILE:-${data_file_default}}"
@@ -41,7 +41,7 @@ Options:
 
 Description:
   Analyze one skill, discover optimization opportunities, and generate
-  a markdown optimization plan report under .agent-loop-data/reports/skill-optimization/.
+  a markdown optimization plan report under .agents/optsmith-data/reports/skill-optimization/.
 EOF
 }
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Local dashboard for self-optimizing loop data.
+"""Local dashboard for Agent Optsmith workflow data.
 
 The server executes repository scripts (`metrics_report.sh`, `weekly_review.sh`,
 and `optimize_skill.sh`) and exposes a filterable UI for date ranges, skill
@@ -361,7 +361,7 @@ HTML_PAGE = """<!doctype html>
           </select>
         </label>
       </div>
-      <h1 data-i18n="hero_title">Self-Optimizing Loop Dashboard</h1>
+      <h1 data-i18n="hero_title">Agent Optsmith Dashboard</h1>
       <p data-i18n="hero_subtitle">Filter by date, skill, cutover, and metric key. The page executes local project scripts to load data.</p>
     </section>
 
@@ -421,7 +421,7 @@ HTML_PAGE = """<!doctype html>
   <script>
     const I18N = {
       en: {
-        hero_title: "Self-Optimizing Loop Dashboard",
+        hero_title: "Agent Optsmith Dashboard",
         hero_subtitle: "Filter by date, skill, cutover, and metric key. The page executes local project scripts to load data.",
         label_start_date: "Start Date",
         label_end_date: "End Date",
@@ -494,7 +494,7 @@ HTML_PAGE = """<!doctype html>
         label_none: "none",
       },
       zh: {
-        hero_title: "自优化闭环看板",
+        hero_title: "Agent 优化工匠看板",
         hero_subtitle: "按日期、skill、cutover 和指标关键字筛选。页面会执行项目脚本获取数据。",
         label_start_date: "开始日期",
         label_end_date: "结束日期",
@@ -1223,14 +1223,14 @@ def resolve_runtime_paths() -> RuntimePaths:
     workspace = Path(os.environ.get("OPTSMITH_WORKSPACE_DIR", os.getcwd())).resolve()
 
     if skill_mode:
-        data_file_default = workspace / ".agent-loop-data/metrics/task-runs.csv"
-        kb_dir_default = workspace / ".agent-loop-data/knowledge-base/errors"
-        report_dir_default = workspace / ".agent-loop-data/reports"
+        data_file_default = workspace / ".agents/optsmith-data/metrics/task-runs.csv"
+        kb_dir_default = workspace / ".agents/optsmith-data/knowledge-base/errors"
+        report_dir_default = workspace / ".agents/optsmith-data/reports"
         local_skills_dir_default = workspace / ".agents/skills"
     else:
-        data_file_default = workspace / ".agent-loop-data/metrics/task-runs.csv"
-        kb_dir_default = workspace / ".agent-loop-data/knowledge-base/errors"
-        report_dir_default = workspace / ".agent-loop-data/reports"
+        data_file_default = workspace / ".agents/optsmith-data/metrics/task-runs.csv"
+        kb_dir_default = workspace / ".agents/optsmith-data/knowledge-base/errors"
+        report_dir_default = workspace / ".agents/optsmith-data/reports"
         local_skills_dir_default = workspace / ".agents/skills"
 
     data_file = Path(os.environ.get("OPTSMITH_DATA_FILE", str(data_file_default))).resolve()
@@ -2031,7 +2031,7 @@ description: Auto-generated skill for {task_type_value} tasks from dashboard rec
 
 ## References
 
-- Use project report logs under `.agent-loop-data/reports/optimization-history/`.
+- Use project report logs under `.agents/optsmith-data/reports/optimization-history/`.
 
 ## Scripts
 
@@ -2511,7 +2511,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Run local web dashboard for self-optimizing loop."
+        description="Run local web dashboard for Agent Optsmith workflow."
     )
     parser.add_argument("--host", default="127.0.0.1", help="bind host")
     parser.add_argument("--port", type=int, default=8765, help="bind port")

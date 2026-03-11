@@ -26,7 +26,7 @@ task_type="${OPTSMITH_TASK_TYPE:-coding}"
 project="${OPTSMITH_PROJECT:-$(basename "${workspace_dir}")}"
 model="${OPTSMITH_MODEL:-gpt-5}"
 used_skill="${OPTSMITH_USED_SKILL:-true}"
-skill_name="${OPTSMITH_SKILL_NAME:-agent-optsmith-loop}"
+skill_name="${OPTSMITH_SKILL_NAME:-agent-optsmith}"
 total_tokens="${OPTSMITH_TOTAL_TOKENS:-}"
 duration_sec="${OPTSMITH_DURATION_SEC:-}"
 success="${OPTSMITH_SUCCESS:-true}"
@@ -59,7 +59,7 @@ Options:
   --enforce-telemetry
 
 Description:
-  Automatically run the self-optimizing loop:
+  Automatically run the Agent Optsmith workflow:
   1) initialize workspace data in skill mode when missing
   2) log one task run
   3) run metrics reports
@@ -272,7 +272,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-if [[ "${mode}" == "skill" && ! -d "${workspace_dir}/.agent-loop-data" ]]; then
+if [[ "${mode}" == "skill" && ! -d "${workspace_dir}/.agents/optsmith-data" ]]; then
   "${setup_script}" --workspace "${workspace_dir}" >/dev/null
 fi
 
@@ -395,4 +395,4 @@ else
   echo "skipped: --skip-weekly"
 fi
 
-echo "auto loop run completed"
+echo "auto workflow run completed"

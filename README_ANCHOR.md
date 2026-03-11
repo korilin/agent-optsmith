@@ -5,7 +5,7 @@
 
 ## 1. 你作为作者的目标
 
-1. 保证闭环可持续运行：记录任务、复盘失败、沉淀规则。
+1. 保证 Agent 优化工匠流程可持续运行：记录任务、复盘失败、沉淀规则。
 2. 保证优化可量化：token、时长、成功率、返工率可追踪。
 3. 保证能力可复用：runtime 脚本与可安装 skill 始终一致。
 4. 保证文档可执行：用户文档和维护文档职责清晰、入口明确。
@@ -16,7 +16,7 @@
 - `README_ANCHOR.md`（本文件）：只讲“作者怎么维护仓库”。
 - `AGENTS.md`：治理规则与门禁策略。
 - `docs/measurement-framework.md`：指标定义与口径。
-- `docs/closed-loop-playbook.md`：日常/每周操作节奏。
+- `docs/optsmith-playbook.md`：日常/每周操作节奏。
 
 执行原则：用户文档不塞维护细节，维护细节不散落在多个入口页。
 
@@ -35,7 +35,7 @@
 目录分层约定：
 
 - `.agents/skills/optsmith-repo-maintainer/`：仅本仓库自用的维护 skill（面向仓库作者）。
-- `skills/agent-optsmith-loop/`：对外分发的可安装 skill（面向接入项目用户）。
+- `skills/agent-optsmith/`：对外分发的可安装 skill（面向接入项目用户）。
 
 ## 4. 提交前必做流程（强制）
 
@@ -45,7 +45,7 @@
 .agents/skills/optsmith-repo-maintainer/scripts/sync_runtime_to_installable_skill.sh
 ```
 
-用途：把 `scripts/` 的 runtime 实现同步到 `skills/agent-optsmith-loop/scripts/`。
+用途：把 `scripts/` 的 runtime 实现同步到 `skills/agent-optsmith/scripts/`。
 
 ### Step B：同步中英文 README 并保持版本号一致
 
@@ -99,7 +99,7 @@
 1. 每个任务完成后运行 `./scripts/auto_run_loop.sh` 自动执行记录+分析+周报。
 2. 用 `./scripts/dashboard_server.sh` 查看可筛选看板并验证趋势。
 3. 对出现退化的 skill，运行 `./scripts/optimize_skill.sh --skill <name>` 生成优化方案。
-4. 对新增失败在 `.agent-loop-data/knowledge-base/errors/` 建立标准条目。
+4. 对新增失败在 `.agents/optsmith-data/knowledge-base/errors/` 建立标准条目。
 5. 当重复工作流 >= 3 次/7天，或高成本/重复失败出现时，新增或重构 skill。
 6. 仅在有事故证据或指标收益时，修改 `AGENTS.md` 规则。
 
@@ -109,7 +109,7 @@
   - 同步到 installable skill
   - 跑 `validate_repo_workflow.sh`
   - 若行为变化，更新 README / docs
-- 改 `skills/agent-optsmith-loop/`：
+- 改 `skills/agent-optsmith/`：
   - 跑 `validate_repo_workflow.sh`
   - 确认命令示例与文档一致
 - 改 README：
@@ -123,9 +123,9 @@
 
 ### 初始化模板单一来源（重要）
 
-- 项目初始化模板只保留一个来源：`skills/agent-optsmith-loop/templates/workspace/`。
+- 项目初始化模板只保留一个来源：`skills/agent-optsmith/templates/workspace/`。
 - `setup_loop_workspace.sh` 必须从该目录拷贝初始化文件与目录，不允许再在脚本内联维护另一套模板内容。
-- `init` 目录结构不应创建 `.agent-loop-data/skills`；skill 产物默认落在项目 `.agents/skills/`。
+- `install` 后目录结构不应创建 `.agents/optsmith-data/skills`；skill 产物默认落在项目 `.agents/skills/`。
 
 ## 7. 常见失败与快速排查
 
@@ -148,6 +148,6 @@
 1. 相关脚本和文档已同步。
 2. `check_readme_sync.sh` 通过。
 3. `validate_repo_workflow.sh` 通过。
-4. 若有新增失败案例，已写入 `.agent-loop-data/knowledge-base/errors/YYYY-MM-DD-*.md`。
+4. 若有新增失败案例，已写入 `.agents/optsmith-data/knowledge-base/errors/YYYY-MM-DD-*.md`。
 5. 如果规则发生变化，`AGENTS.md` 与本文件已更新。
 6. 使用 `auto_commit.sh` 完成提交并确认 commit message 合理。

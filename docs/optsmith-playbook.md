@@ -1,6 +1,6 @@
-# Closed Loop Playbook
+# Agent Optsmith Playbook
 
-## Daily Loop
+## Daily Workflow
 
 1. Intake
 - Assign task type (`coding`, `debug`, `review`, `docs`, `ops`).
@@ -15,9 +15,9 @@
 - Confirm changed files and output contract.
 
 4. Capture Learning
-- For failures or high token usage, add one error entry in `.agent-loop-data/knowledge-base/errors/`.
+- For failures or high token usage, add one error entry in `.agents/optsmith-data/knowledge-base/errors/`.
 
-## Weekly Loop
+## Weekly Workflow
 
 1. Generate report:
 

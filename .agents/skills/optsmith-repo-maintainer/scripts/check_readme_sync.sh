@@ -56,8 +56,8 @@ assert_contains "${readme_en}" "pipx install" "README.md missing pipx install co
 assert_contains "${readme_cn}" "pipx install" "README_CN.md missing pipx install command"
 assert_contains "${readme_en}" "optsmith update" "README.md missing optsmith update command"
 assert_contains "${readme_cn}" "optsmith update" "README_CN.md missing optsmith update command"
-assert_contains "${readme_en}" "optsmith init" "README.md missing optsmith init command"
-assert_contains "${readme_cn}" "optsmith init" "README_CN.md missing optsmith init command"
+assert_contains "${readme_en}" "optsmith install" "README.md missing optsmith install command"
+assert_contains "${readme_cn}" "optsmith install" "README_CN.md missing optsmith install command"
 assert_contains "${readme_en}" "optsmith dashboard" "README.md missing optsmith dashboard command"
 assert_contains "${readme_cn}" "optsmith dashboard" "README_CN.md missing optsmith dashboard command"
 

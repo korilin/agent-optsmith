@@ -4,14 +4,14 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 WORKSPACE_DIR="${OPTSMITH_WORKSPACE_DIR:-$(pwd)}"
 WORKSPACE_DIR="$(cd "${WORKSPACE_DIR}" && pwd)"
-KB_DIR_DEFAULT="${WORKSPACE_DIR}/.agent-loop-data/knowledge-base/errors"
-REPORT_DIR_DEFAULT="${WORKSPACE_DIR}/.agent-loop-data/reports"
+KB_DIR_DEFAULT="${WORKSPACE_DIR}/.agents/optsmith-data/knowledge-base/errors"
+REPORT_DIR_DEFAULT="${WORKSPACE_DIR}/.agents/optsmith-data/reports"
 KB_DIR="${OPTSMITH_KB_DIR:-${KB_DIR_DEFAULT}}"
 REPORT_DIR="${OPTSMITH_REPORT_DIR:-${REPORT_DIR_DEFAULT}}"
 
 today="$(date +%Y-%m-%d)"
 start_date="$(date -v-6d +%Y-%m-%d 2>/dev/null || date -d '6 days ago' +%Y-%m-%d)"
-report_file="${REPORT_DIR}/${today}-weekly-self-optimization-report.md"
+report_file="${REPORT_DIR}/${today}-weekly-agent-optsmith-report.md"
 
 mkdir -p "${KB_DIR}" "${REPORT_DIR}"
 
@@ -69,7 +69,7 @@ top_task_types="$(sort "${task_types_tmp}" | uniq -c | sort -nr | head -n 3 | se
 [[ -n "${top_task_types}" ]] || top_task_types="- none"
 
 cat > "${report_file}" <<EOF
-# Weekly Self-Optimization Report
+# Weekly Agent Optsmith Report
 
 ## Scope
 
