@@ -150,10 +150,11 @@ optsmith uninstall --workspace "$(pwd)"
 
 How to read this flow:
 
-1. Top subgraph (`Loop Overview`) is the continuous optimization loop.
-2. Bottom-left subgraph (`Scenario A`) is the auto path after task completion.
-3. Bottom-right subgraph (`Scenario B`) is the dashboard-triggered optimization path.
-4. Cross-subgraph arrows show how loop nodes trigger each scenario and how both scenario outputs return to `Effect Verification`.
+1. Stages 1-3 cover completion, logging, and task-sample persistence.
+2. Stages 4-5 cover metric generation and optimization-opportunity discovery.
+3. Stages 6-7 cover optimization application, effect verification, and governance promotion.
+4. The right-side return arrow represents the next-task loop.
+5. The bottom note block summarizes core calculation rules.
 
 ## 5. How to Interpret Results Correctly
 
