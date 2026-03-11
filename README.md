@@ -5,12 +5,9 @@
 This project provides an Agent Optsmith workflow for measurable AI coding optimization.
 This README is the main entry point for installation and daily operation.
 
-If you maintain this repository itself, use [README_ANCHOR.md](README_ANCHOR.md).
-
 Companion docs:
 
 - [中文说明](README_CN.md)
-- [Author Anchor Guide](README_ANCHOR.md)
 - [Optimization Playbook](docs/optsmith-playbook.md)
 - [Measurement Framework](docs/measurement-framework.md)
 
@@ -244,13 +241,17 @@ How to read this flow:
 4. Ensure both pre and post windows have enough samples before using cutover deltas.
 5. Treat optimization as verified only after post-window metrics stay improved, not after one short burst.
 
-## 6. Author/Maintainer Entry
+## 6. Command Quick Reference
 
-All maintainer-facing instructions were moved to [README_ANCHOR.md](README_ANCHOR.md), including:
-
-1. Repository change workflow.
-2. Required validation scripts.
-3. README synchronization rules.
-4. Commit gates and release checks.
-
-If your role is user only, you can stop at Sections 1-5.
+1. Initialize in current project:
+- `optsmith install --workspace "$(pwd)"`
+2. Record and analyze one completed task:
+- `optsmith run --workspace "$(pwd)" ...`
+3. Open local dashboard:
+- `optsmith dashboard --workspace "$(pwd)" --host 127.0.0.1 --port 8765`
+4. Inspect metrics directly:
+- `optsmith metrics --workspace "$(pwd)" --all`
+- `optsmith metrics --workspace "$(pwd)" --skill <skill-name>`
+5. Upgrade or remove project integration:
+- `optsmith update --workspace "$(pwd)"`
+- `optsmith uninstall --workspace "$(pwd)"`

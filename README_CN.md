@@ -5,12 +5,9 @@
 这个项目用于在你的工程里落地“可量化”的 Agent Optsmith 流程。
 这份 README 是安装和日常运行的主入口。
 
-如果你是维护本仓库的作者，请看 [README_ANCHOR.md](README_ANCHOR.md)。
-
 配套文档：
 
 - [English Guide](README.md)
-- [作者锚点说明](README_ANCHOR.md)
 - [优化运行手册](docs/optsmith-playbook.md)
 - [指标评估方法](docs/measurement-framework.md)
 
@@ -242,13 +239,17 @@ optsmith uninstall --workspace "$(pwd)"
 4. 用 cutover 做前后对比时，pre/post 两侧都要有足够样本。
 5. 只有在 post 窗口持续改善后，才算 `VERIFIED` 并建议沉淀规则。
 
-## 6. 作者/维护者入口
+## 6. 命令速查
 
-所有作者维护说明已集中到 [README_ANCHOR.md](README_ANCHOR.md)，包括：
-
-1. 仓库变更流程。
-2. 必跑校验脚本。
-3. README 中英文同步规则。
-4. 提交前门禁与发布检查。
-
-如果你只是 skill 使用者，按 1-5 节执行即可。
+1. 在当前项目初始化：
+- `optsmith install --workspace "$(pwd)"`
+2. 记录并分析一次已完成任务：
+- `optsmith run --workspace "$(pwd)" ...`
+3. 打开本地看板：
+- `optsmith dashboard --workspace "$(pwd)" --host 127.0.0.1 --port 8765`
+4. 直接查看指标：
+- `optsmith metrics --workspace "$(pwd)" --all`
+- `optsmith metrics --workspace "$(pwd)" --skill <skill-name>`
+5. 更新或移除项目集成：
+- `optsmith update --workspace "$(pwd)"`
+- `optsmith uninstall --workspace "$(pwd)"`
