@@ -1,9 +1,9 @@
-# Agent Optsmith（用户手册）
+# Agent Optsmith 使用指南
 
 <!-- README_SYNC_VERSION: 2026-03-11 -->
 
-这个项目用于在你的工程里落地“可量化”的 Agent 优化工匠流程。
-如果你的目标是“作为 skill 使用者快速上手”，请从这份 README 开始。
+这个项目用于在你的工程里落地“可量化”的 Agent Optsmith 流程。
+这份 README 是安装和日常运行的主入口。
 
 如果你是维护本仓库的作者，请看 [README_ANCHOR.md](README_ANCHOR.md)。
 
@@ -14,7 +14,7 @@
 - [优化运行手册](docs/optsmith-playbook.md)
 - [指标评估方法](docs/measurement-framework.md)
 
-## 1. 作为用户你能得到什么
+## 1. 核心能力
 
 初始化完成后，你会得到一套稳定优化流程和清晰产物：
 
@@ -145,17 +145,17 @@ optsmith update --workspace "$(pwd)"
 optsmith uninstall --workspace "$(pwd)"
 ```
 
-### 完整 Agent 优化工匠流程图
+### 完整 Agent Optsmith 流程图
 
-![Agent 优化工匠流程图](docs/assets/agent-optsmith-workflow-flow-zh.png)
+![Agent Optsmith 流程图](docs/assets/agent-optsmith-workflow-flow-zh.png)
 
-这张图建议按 4 条泳道阅读：
+这张图建议按阶段阅读：
 
-1. `任务采集`：任务完成后如何标准化并写入 `task-runs.csv`。
-2. `指标分析与策略`：baseline 匹配和 cutover 前后对比如何计算。
-3. `发现与执行`：看板何时发现机会、何时可直接触发优化/新增 skill。
-4. `验证与治理`：优化状态落盘位置、如何验证收益、何时允许沉淀规则。
-5. 图底部 `关键定义` 汇总了返工口径和“同一 skill 优化前后”的切分方法。
+1. 第 1-2 阶段：任务采集与指标计算规则。
+2. 第 3-4 阶段：机会发现触发与立即优化执行。
+3. 第 5-6 阶段：优化状态落盘与前后效果验证方法。
+4. 第 7 阶段：仅将已验证收益沉淀到治理规则。
+5. 图底部注意事项：日期粒度限制与严格对比建议。
 
 ## 5. 如何正确解读输出
 

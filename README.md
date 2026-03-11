@@ -1,9 +1,9 @@
-# Agent Optsmith (User Guide)
+# Agent Optsmith
 
 <!-- README_SYNC_VERSION: 2026-03-11 -->
 
 This project provides an Agent Optsmith workflow for measurable AI coding optimization.
-If your goal is to use the skill in your own repository, this file is the entry point.
+This README is the main entry point for installation and daily operation.
 
 If you maintain this repository itself, use [README_ANCHOR.md](README_ANCHOR.md).
 
@@ -14,7 +14,7 @@ Companion docs:
 - [Optimization Playbook](docs/optsmith-playbook.md)
 - [Measurement Framework](docs/measurement-framework.md)
 
-## 1. What You Get as a User
+## 1. Core Capabilities
 
 After setup, you get a repeatable optimization workflow with concrete outputs:
 
@@ -153,11 +153,11 @@ optsmith uninstall --workspace "$(pwd)"
 
 How to read this flow:
 
-1. Lane 1 (`Task Capture`) shows how one completed task is normalized and appended to `task-runs.csv`.
-2. Lane 2 (`Metrics & Strategy`) shows baseline matching and cutover pre/post calculation logic.
-3. Lane 3 (`Discovery & Action`) shows dashboard discovery timing and immediate optimize/create triggers.
-4. Lane 4 (`Verification & Governance`) shows where optimization state is stored and how gains are verified before promotion.
-5. The bottom legend defines rework semantics and the exact cutover strategy for comparing same-skill before/after.
+1. Stages 1-2: task capture and metric calculation rules.
+2. Stages 3-4: discovery triggers and immediate optimization actions.
+3. Stages 5-6: where optimization state is persisted and how before/after is verified.
+4. Stage 7: governance rule for promoting only verified gains.
+5. Bottom note: date-granularity constraints and strict comparison recommendations.
 
 ## 5. How to Interpret Results Correctly
 
