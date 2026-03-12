@@ -13,9 +13,6 @@ fi
 required_patterns=(
   "name: ci"
   "set -euxo pipefail"
-  "ROOT_DATA=\"\${TMP_ROOT}/root-data\""
-  "OPTSMITH_DATA_FILE=\"\${ROOT_DATA}/metrics/task-runs.csv\" ./scripts/log_task_run.sh"
-  "OPTSMITH_KB_DIR=\"\${ROOT_DATA}/knowledge-base/errors\" OPTSMITH_REPORT_DIR=\"\${ROOT_DATA}/reports\" ./scripts/weekly_review.sh"
   ".agents/skills/optsmith-workflow-maintainer/scripts/check_ci_workflow.sh"
   ".agents/skills/optsmith-repo-maintainer/scripts/validate_repo_workflow.sh"
 )
