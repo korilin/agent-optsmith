@@ -29,8 +29,12 @@ jobs:
           bash -n .agents/skills/optsmith-cli-maintainer/scripts/check_cli_version_bump.sh
           bash -n .agents/skills/optsmith-workflow-maintainer/scripts/check_ci_workflow.sh
 
-      - name: Run smoke checks
+      - name: Workflow policy checks
         run: |
           set -euxo pipefail
           bash .agents/skills/optsmith-workflow-maintainer/scripts/check_ci_workflow.sh
+
+      - name: Repository workflow validation
+        run: |
+          set -euxo pipefail
           bash .agents/skills/optsmith-repo-maintainer/scripts/validate_repo_workflow.sh
