@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "optsmith"
-version = "0.2.0"
+version = "0.2.1"
 description = "CLI for Agent Optsmith: project-local skill install, telemetry, and optimization workflow."
 readme = "README.md"
 license = "MIT"

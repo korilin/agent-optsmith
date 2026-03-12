@@ -5,7 +5,7 @@ class Optsmith < Formula
   homepage "https://github.com/korilin/agent-optsmith"
   url "https://github.com/korilin/agent-optsmith.git",
       branch: "main"
-  version "0.2.0"
+  version "0.2.1"
   license "MIT"
 
   depends_on "python@3.11"
