@@ -1,0 +1,4 @@
+interface:
+  display_name: "Optsmith CLI Maintainer"
+  short_description: "Project-local CLI contract, quality, and versioning workflow."
+  default_prompt: "Use this skill when changing optsmith CLI commands, packaging metadata, or bundled CLI assets."

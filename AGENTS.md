@@ -44,19 +44,30 @@ Skill quality gates:
 4. Repeated code lives in `scripts/` and is executable.
 5. Skill is validated before adoption.
 
-## Project-Local Skill
+## Project-Local Skills
 
-Use project-local skill `optsmith-repo-maintainer` for repository maintenance tasks:
+Use `optsmith-repo-maintainer` for repository maintenance tasks:
 
 - path: `.agents/skills/optsmith-repo-maintainer/`
-- trigger: any change to `scripts/`, `.agents/skills/`, `skills/`, CI, or workflow docs.
-- local/public split:
-  - project-local maintainer skill: `.agents/skills/optsmith-repo-maintainer/`
-  - installable public skill: `skills/agent-optsmith/`
+- trigger: changes to `scripts/`, `.agents/skills/`, `skills/`, CI, or workflow docs.
 - required workflow:
   1. `.agents/skills/optsmith-repo-maintainer/scripts/sync_runtime_to_installable_skill.sh` (when runtime scripts changed)
   2. Update docs when command behavior changed.
   3. `.agents/skills/optsmith-repo-maintainer/scripts/check_readme_sync.sh` (README.md and README_CN.md must stay synchronized)
+  4. `.agents/skills/optsmith-repo-maintainer/scripts/validate_repo_workflow.sh`
+  5. `.agents/skills/optsmith-repo-maintainer/scripts/auto_commit.sh --message "<commit-message>"`
+
+Use `optsmith-cli-maintainer` for CLI behavior and release/versioning tasks:
+
+- path: `.agents/skills/optsmith-cli-maintainer/`
+- trigger: changes under `optsmith_cli/`, `pyproject.toml`, or `Formula/optsmith.rb`.
+- required workflow:
+  1. Keep CLI command contract backward-compatible when possible.
+  2. If CLI changed, bump version in all three files together:
+     - `pyproject.toml`
+     - `optsmith_cli/__init__.py`
+     - `Formula/optsmith.rb`
+  3. `.agents/skills/optsmith-cli-maintainer/scripts/check_cli_version_bump.sh`
   4. `.agents/skills/optsmith-repo-maintainer/scripts/validate_repo_workflow.sh`
   5. `.agents/skills/optsmith-repo-maintainer/scripts/auto_commit.sh --message "<commit-message>"`
 

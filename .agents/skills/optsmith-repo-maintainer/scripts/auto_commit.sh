@@ -59,9 +59,10 @@ Options:
 
 Description:
   1) Auto-run task logging + metrics before commit (default on)
-  2) Stage all repository changes
-  3) Create one commit non-interactively
-  4) Push commit to remote branch (default on)
+  2) Enforce CLI version policy when CLI scope changed
+  3) Stage all repository changes
+  4) Create one commit non-interactively
+  5) Push commit to remote branch (default on)
 EOF
 }
 
@@ -189,6 +190,12 @@ if [[ "${run_loop}" == "true" ]]; then
 
   echo "running auto loop before commit..."
   "${repo_root}/scripts/auto_run_loop.sh" "${loop_args[@]}"
+fi
+
+cli_check_script="${repo_root}/.agents/skills/optsmith-cli-maintainer/scripts/check_cli_version_bump.sh"
+if [[ -x "${cli_check_script}" ]]; then
+  echo "running CLI version policy check..."
+  "${cli_check_script}"
 fi
 
 git add -A

@@ -16,7 +16,7 @@ runtime_scripts=(
   "dashboard_server.py"
 )
 
-echo "[1/7] shell syntax checks"
+echo "[1/8] shell syntax checks"
 bash -n "${repo_root}/scripts/create_skill.sh"
 shell_runtime_scripts=(
   "log_task_run.sh"
@@ -40,8 +40,9 @@ bash -n "${repo_root}/.agents/skills/optsmith-repo-maintainer/scripts/sync_runti
 bash -n "${repo_root}/.agents/skills/optsmith-repo-maintainer/scripts/install_to_codex.sh"
 bash -n "${repo_root}/.agents/skills/optsmith-repo-maintainer/scripts/check_readme_sync.sh"
 bash -n "${repo_root}/.agents/skills/optsmith-repo-maintainer/scripts/auto_commit.sh"
+bash -n "${repo_root}/.agents/skills/optsmith-cli-maintainer/scripts/check_cli_version_bump.sh"
 
-echo "[2/7] runtime/script parity checks"
+echo "[2/8] runtime/script parity checks"
 for f in "${runtime_scripts[@]}"; do
   cmp -s "${repo_root}/scripts/${f}" "${repo_root}/skills/agent-optsmith/scripts/${f}" || {
     echo "error: runtime script out of sync: ${f}"
@@ -58,10 +59,13 @@ for f in "${runtime_scripts[@]}"; do
   }
 done
 
-echo "[3/7] README sync checks"
+echo "[3/8] CLI version policy checks"
+"${repo_root}/.agents/skills/optsmith-cli-maintainer/scripts/check_cli_version_bump.sh"
+
+echo "[4/8] README sync checks"
 "${repo_root}/.agents/skills/optsmith-repo-maintainer/scripts/check_readme_sync.sh"
 
-echo "[4/7] root toolkit smoke test"
+echo "[5/8] root toolkit smoke test"
 mkdir -p "${tmp_dir}/rootdata/metrics" "${tmp_dir}/rootdata/knowledge-base/errors" "${tmp_dir}/rootdata/reports"
 seed_csv="${repo_root}/.agents/optsmith-data/metrics/task-runs.csv"
 if [[ ! -f "${seed_csv}" && -f "${repo_root}/.agent-loop-data/metrics/task-runs.csv" ]]; then
@@ -148,7 +152,7 @@ dashboard_pid_root=$!
 sleep 1
 kill "${dashboard_pid_root}" >/dev/null 2>&1 || true
 
-echo "[5/7] installable skill smoke test"
+echo "[6/8] installable skill smoke test"
 mkdir -p "${tmp_dir}/skill-project"
 cd "${tmp_dir}/skill-project"
 "${repo_root}/skills/agent-optsmith/scripts/setup_loop_workspace.sh" --workspace "$(pwd)" >/dev/null
@@ -180,7 +184,7 @@ sleep 1
 kill "${dashboard_pid_skill}" >/dev/null 2>&1 || true
 cd "${repo_root}"
 
-echo "[6/7] CLI project install/update/uninstall smoke test"
+echo "[7/8] CLI project install/update/uninstall smoke test"
 mkdir -p "${tmp_dir}/cli-project"
 PYTHONPATH="${repo_root}" python3 -m optsmith_cli.cli install \
   --workspace "${tmp_dir}/cli-project" \
@@ -208,5 +212,5 @@ if grep -q '<!-- OPTSMITH-SKILL:START -->' "${tmp_dir}/cli-project/AGENTS.md"; t
   exit 1
 fi
 
-echo "[7/7] done"
+echo "[8/8] done"
 echo "repository workflow validation passed"

@@ -5,7 +5,7 @@
 - Modify root scripts under `scripts/`.
 - Modify installable skill under `skills/agent-optsmith/`.
 - Change metrics logic, weekly review logic, or skill packaging.
-- Prepare release, tag, or major refactor of this repository.
+- Refactor repository workflow docs, CI, or validation pipeline.
 
 ## Required steps before commit
 
@@ -21,7 +21,10 @@
    - `README.md`
    - `README_CN.md`
    - `docs/project-integration-guide-cn.md`
-5. Auto-commit and auto-push after all checks pass:
+5. If CLI scope changed (`optsmith_cli/`, `pyproject.toml`, `Formula/optsmith.rb`), run:
+   - `.agents/skills/optsmith-cli-maintainer/scripts/check_cli_version_bump.sh`
+   - and follow `.agents/skills/optsmith-cli-maintainer/SKILL.md`
+6. Auto-commit and auto-push after all checks pass:
    - `.agents/skills/optsmith-repo-maintainer/scripts/auto_commit.sh --message "<commit-message>"`
    - default behavior includes task logging via `scripts/auto_run_loop.sh` before commit
    - default behavior pushes to remote after commit

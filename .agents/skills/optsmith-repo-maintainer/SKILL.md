@@ -13,6 +13,7 @@ This skill is project-local and intended only for `agent-optsmith`.
 - Run repository validation workflow before commit.
 - Keep English and Chinese README synchronized.
 - Keep docs consistent with changed commands and behavior.
+- Delegate CLI command-contract, packaging, and version-bump policy to `optsmith-cli-maintainer`.
 - Optionally install this project-local skill into local Codex skill home.
 
 ## Workflow
@@ -25,6 +26,11 @@ This skill is project-local and intended only for `agent-optsmith`.
 2. Run repository validation:
 ```bash
 .agents/skills/optsmith-repo-maintainer/scripts/validate_repo_workflow.sh
+```
+
+If CLI scope changed (`optsmith_cli/`, `pyproject.toml`, `Formula/optsmith.rb`), also run:
+```bash
+.agents/skills/optsmith-cli-maintainer/scripts/check_cli_version_bump.sh
 ```
 
 3. Keep `README.md` and `README_CN.md` synchronized:
