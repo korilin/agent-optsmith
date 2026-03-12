@@ -34,7 +34,14 @@ jobs:
           set -euxo pipefail
           bash .agents/skills/optsmith-workflow-maintainer/scripts/check_ci_workflow.sh
 
-      - name: Repository workflow validation
+      - name: Repository quick validation
         run: |
           set -euxo pipefail
-          bash .agents/skills/optsmith-repo-maintainer/scripts/validate_repo_workflow.sh
+          bash .agents/skills/optsmith-cli-maintainer/scripts/check_cli_version_bump.sh
+          bash .agents/skills/optsmith-repo-maintainer/scripts/check_readme_sync.sh
+          PYTHONPATH="$(pwd)" python3 -m optsmith_cli.cli help >/dev/null
+          runtime_scripts=(log_task_run.sh metrics_report.sh weekly_review.sh auto_run_loop.sh optimize_skill.sh dashboard_server.sh dashboard_server.py)
+          for f in "${runtime_scripts[@]}"; do
+            cmp -s "scripts/${f}" "skills/agent-optsmith/scripts/${f}"
+            cmp -s "skills/agent-optsmith/scripts/${f}" "optsmith_cli/resources/skills/agent-optsmith/scripts/${f}"
+          done

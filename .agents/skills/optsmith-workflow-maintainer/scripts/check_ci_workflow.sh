@@ -14,7 +14,8 @@ required_patterns=(
   "name: ci"
   "set -euxo pipefail"
   ".agents/skills/optsmith-workflow-maintainer/scripts/check_ci_workflow.sh"
-  ".agents/skills/optsmith-repo-maintainer/scripts/validate_repo_workflow.sh"
+  ".agents/skills/optsmith-cli-maintainer/scripts/check_cli_version_bump.sh"
+  ".agents/skills/optsmith-repo-maintainer/scripts/check_readme_sync.sh"
 )
 
 for pattern in "${required_patterns[@]}"; do
