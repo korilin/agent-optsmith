@@ -32,10 +32,5 @@ jobs:
       - name: Run smoke checks
         run: |
           set -euxo pipefail
-          chmod +x scripts/*.sh
-          chmod +x skills/agent-optsmith/scripts/*.sh
-          chmod +x .agents/skills/optsmith-repo-maintainer/scripts/*.sh
-          chmod +x .agents/skills/optsmith-cli-maintainer/scripts/*.sh
-          chmod +x .agents/skills/optsmith-workflow-maintainer/scripts/*.sh
-          .agents/skills/optsmith-workflow-maintainer/scripts/check_ci_workflow.sh
-          .agents/skills/optsmith-repo-maintainer/scripts/validate_repo_workflow.sh
+          bash .agents/skills/optsmith-workflow-maintainer/scripts/check_ci_workflow.sh
+          bash .agents/skills/optsmith-repo-maintainer/scripts/validate_repo_workflow.sh
